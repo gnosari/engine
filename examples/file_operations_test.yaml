@@ -1,0 +1,29 @@
+name: File Operations
+
+tools:
+  - name: file_ops
+    module: gnosari.tools.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./test_workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".py"]
+      max_file_size: 1048576  # 1MB
+      tool_name: "file_operations"
+      tool_description: "Read, write, and manage files in the test workspace"
+
+agents:
+  - name: FileManager
+    instructions: >
+      You are a file manager agent that can read and write files using the file_operations tool.
+      When asked to work with files, use the file_operations tool to:
+      - Read existing files with operation="read"
+      - Write new files with operation="write" 
+      - List directory contents with operation="list"
+      - Check if files exist with operation="exists"
+      - Delete files with operation="delete"
+      
+      Always provide clear feedback about what operations you performed.
+    orchestrator: true
+    model: gpt-4o-mini
+    tools:
+      - file_ops

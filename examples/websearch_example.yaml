@@ -1,0 +1,21 @@
+tools:
+  - name: web_search
+    module: agents
+    class: WebSearchTool
+
+  - name: website_content
+    module: gnosari.tools.website_content
+    class: WebsiteContentTool
+    args:
+      base_url: https://r.ai.neomanex.com
+      timeout: 30
+
+agents:
+  - name: Web Search Agent
+    instructions: >
+      Fulfill user request.
+    orchestrator: true
+    model: gpt-4o
+    tools:
+      - web_search
+      - website_content

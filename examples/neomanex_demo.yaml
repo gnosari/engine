@@ -1,0 +1,22 @@
+name: Neomanex Team Demo
+description: 'Single Agent Team with Neomanex website content.'
+
+agents:
+  - instructions: 'Give responses based on your Knowledge Sources
+      Role: Expert in injected Knowledge
+      Backstory: You are a knowledge expert that responds to messages always based on
+      your injected knowledge '
+    knowledge:
+      - 6a939f52-0742-4cc7-aba0-f0112ba7b770
+    model: gpt-4o
+    name: Neomanex Knowledge Agent
+    temperature: 0.1
+
+knowledge:
+  - data:
+      - http://neomanex.com/page-sitemap.xml
+      - http://neomanex.com/post-sitemap.xml
+    description: 'Knowledge source: 6a939f52-0742-4cc7-aba0-f0112ba7b770'
+    name: 6a939f52-0742-4cc7-aba0-f0112ba7b770
+    type: sitemap
+

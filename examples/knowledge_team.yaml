@@ -1,0 +1,101 @@
+name: "Knowledge Team"
+description: "A team with knowledge bases using Embedchain"
+
+# Define knowledge bases available to agents
+knowledge:
+  - name: neomanex_website
+    type: sitemap
+    description: "Knowledge about Neomanex"
+    data:
+       - "https://neomanex.com/page-sitemap.xml"
+
+  - name: product_manual
+    type: text
+    description: "Product manual and installation guide for Gnosari AI Teams platform"
+    data:
+      - |
+        Product Manual for Gnosari AI Teams
+        
+        Gnosari is an AI team orchestration platform that allows you to create and manage teams of AI agents.
+        It supports various knowledge bases, tools, and agent configurations.
+        
+        Key Features:
+        - Multi-agent team orchestration
+        - Knowledge base integration with Embedchain
+        - MCP tool support
+        - YAML-based configuration
+        - Real-time streaming
+      - |
+        Installation Guide:
+        
+        To install Gnosari, use Poetry:
+        ```bash
+        poetry install
+        poetry add embedchain
+        ```
+        
+        To run a team:
+        ```bash
+        poetry run gnosari --config team.yaml --message "Your message"
+        ```
+    
+  - name: faq_knowledge
+    type: text
+    description: "Frequently asked questions and common troubleshooting information"
+    data:
+      - |
+        Q: What is Gnosari?
+        A: Gnosari is an AI team orchestration platform that allows you to create and manage teams of AI agents.
+        
+        Q: How do I create a team?
+        A: You can create a team by defining a YAML configuration file with agents, tools, and knowledge bases.
+        
+        Q: What is Embedchain?
+        A: Embedchain is a framework for creating AI applications with knowledge bases.
+      - |
+        Q: How do I add knowledge bases?
+        A: Define knowledge bases in your YAML configuration under the 'knowledge' section.
+        
+        Q: What data types are supported?
+        A: Website, PDF, text, sitemap, YouTube, CSV, JSON, DOCX, Markdown, and more.
+        
+        Q: Can I mix different data types?
+        A: Yes, you can add multiple data sources of different types to a single knowledge base.
+
+# Define agents in the team
+agents:
+  - name: "Knowledge Coordinator"
+    instructions: >
+      You are a knowledge coordinator that helps users find information from various knowledge bases.
+      You can query company documentation, product manuals, and FAQ knowledge bases.
+      When a user asks a question, always use the knowledge_query tool to search for relevant information before giving a response.
+
+    orchestrator: true
+    model: gpt-4o
+    temperature: 0.1
+    knowledge:
+      - company_docs
+      - product_manual
+      - faq_knowledge
+      - neomanex_website
+
+  - name: "Documentation Specialist"
+    instructions: >
+      You are a documentation specialist who helps users find information in company documentation.
+      You excel at searching through technical documentation and providing clear, accurate answers.
+      Always use the knowledge_query tool to search the company_docs knowledge base before answering.
+    model: gpt-4o
+    temperature: 0.2
+    knowledge:
+      - company_docs
+
+  - name: "Product Expert"
+    instructions: >
+      You are a product expert who helps users understand product features and functionality.
+      You can search through product manuals and provide detailed explanations.
+      Always use the knowledge_query tool to search the appropriate knowledge base before answering.
+    model: gpt-4o
+    temperature: 0.3
+    knowledge:
+      - product_manual
+      - faq_knowledge

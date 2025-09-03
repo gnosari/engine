@@ -1,0 +1,130 @@
+name: "Advanced Embedchain Configuration Examples"
+description: "Demonstrating various Embedchain configuration scenarios"
+
+knowledge:
+  # Example 1: Website with custom chunking for technical docs
+  - name: technical_docs
+    type: website
+    description: "Technical documentation with large chunks for context"
+    chunk_size: 2000
+    chunk_overlap: 400
+    separator: "\n\n"
+    data:
+      - "https://docs.example.com/api"
+      - "https://docs.example.com/guides"
+
+  # Example 2: PDF with custom loader settings
+  - name: research_papers
+    type: pdf
+    description: "Research papers with custom PDF processing"
+    timeout: 120
+    max_retries: 5
+    chunk_size: 1500
+    chunk_overlap: 300
+    data:
+      - "/path/to/research_paper1.pdf"
+      - "/path/to/research_paper2.pdf"
+
+  # Example 3: Text with minimal chunking for short content
+  - name: faq_knowledge
+    type: text
+    description: "FAQ content with small chunks for precise answers"
+    chunk_size: 300
+    chunk_overlap: 50
+    separator: "\n"
+    data:
+      - |
+        Q: What is the main feature?
+        A: The main feature is advanced AI processing.
+        
+        Q: How do I install it?
+        A: Run 'pip install package-name' to install.
+        
+        Q: What are the system requirements?
+        A: Python 3.8+ and 4GB RAM minimum.
+
+  # Example 4: YouTube with custom processing
+  - name: video_tutorials
+    type: youtube
+    description: "YouTube tutorials with custom video processing"
+    timeout: 300
+    max_retries: 3
+    chunk_size: 1000
+    chunk_overlap: 200
+    data:
+      - "https://www.youtube.com/watch?v=example1"
+      - "https://www.youtube.com/watch?v=example2"
+
+  # Example 5: Sitemap with custom crawling
+  - name: company_website
+    type: sitemap
+    description: "Company website crawled via sitemap"
+    timeout: 60
+    max_retries: 3
+    follow_links: true
+    max_depth: 3
+    chunk_size: 800
+    chunk_overlap: 150
+    data:
+      - "https://company.com/sitemap.xml"
+
+  # Example 6: JSON data with custom parsing
+  - name: api_documentation
+    type: json
+    description: "API documentation in JSON format"
+    timeout: 30
+    max_retries: 2
+    chunk_size: 600
+    chunk_overlap: 100
+    data:
+      - "/path/to/api_docs.json"
+
+  # Example 7: CSV data with custom parsing
+  - name: product_catalog
+    type: csv
+    description: "Product catalog in CSV format"
+    delimiter: ","
+    encoding: "utf-8"
+    chunk_size: 400
+    chunk_overlap: 50
+    data:
+      - "/path/to/products.csv"
+
+  # Example 8: Markdown with custom processing
+  - name: documentation_md
+    type: md
+    description: "Markdown documentation files"
+    chunk_size: 1200
+    chunk_overlap: 200
+    separator: "\n## "
+    data:
+      - "/path/to/README.md"
+      - "/path/to/API.md"
+
+agents:
+  - name: "Advanced Config Agent"
+    instructions: >
+      You are an agent that works with various types of custom-configured knowledge bases.
+      Each knowledge base has been optimized for its specific content type:
+      - Technical docs: Large chunks for context
+      - Research papers: Custom PDF processing
+      - FAQ: Small chunks for precise answers
+      - Videos: Custom video processing
+      - Websites: Custom crawling settings
+      - JSON/CSV: Custom parsing
+      - Markdown: Custom markdown processing
+      
+      Use the knowledge_query tool to search through these optimized knowledge bases.
+    model: gpt-4o
+    temperature: 0.1
+    tools:
+      - knowledge_query
+    knowledge:
+      - technical_docs
+      - research_papers
+      - faq_knowledge
+      - video_tutorials
+      - company_website
+      - api_documentation
+      - product_catalog
+      - documentation_md
