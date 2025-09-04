@@ -12,7 +12,8 @@ from agents import Agent, handoff, RunContextWrapper
 from agents.agent import ModelSettings
 from agents.mcp import (
     MCPServerStreamableHttp, MCPServerStreamableHttpParams,
-    MCPServerSse, MCPServerSseParams
+    MCPServerSse, MCPServerSseParams,
+    MCPServerStdio, MCPServerStdioParams,
 )
 from ..prompts import build_orchestrator_system_prompt, build_specialized_agent_system_prompt
 from ..utils.tool_manager import ToolManager
@@ -170,10 +171,14 @@ class TeamBuilder:
         for tool_config in tools_config:
             tool_name = tool_config.get('name')
             tool_url = tool_config.get('url')
+            tool_command = tool_config.get('command')
             
-            if tool_url:
+            if tool_url or tool_command:
                 # This is an MCP server
-                self.logger.info(f"Creating MCP server for {tool_name} at {tool_url}")
+                if tool_url:
+                    self.logger.info(f"Creating MCP server for {tool_name} at {tool_url}")
+                else:
+                    self.logger.info(f"Creating MCP stdio server for {tool_name} with command {tool_command}")
                 
                 try:
                     # Determine connection type from config, default to 'sse' for backward compatibility
@@ -190,7 +195,8 @@ class TeamBuilder:
                         mcp_server = MCPServerSse(
                             params=params,
                             name=tool_name,
-                            cache_tools_list=True
+                            cache_tools_list=True,
+                            client_session_timeout_seconds=tool_config.get('client_session_timeout_seconds', 30),
                         )
                         self.logger.debug(f"Creating SSE MCP server with params: {params}")
                         
@@ -206,13 +212,26 @@ class TeamBuilder:
                         mcp_server = MCPServerStreamableHttp(
                             params=params,
                             name=tool_name,
+                            client_session_timeout_seconds=tool_config.get('client_session_timeout_seconds', 30),
                         )
                         self.logger.debug(f"Creating Streamable HTTP MCP server with params: {params}")
+
+                    elif connection_type == 'stdio':
+                        # Create Stdio MCP server
+                        params = MCPServerStdioParams(
+                            command=tool_command,
+                            args=tool_config.get('args', []),
+                        )
+
+                        mcp_server = MCPServerStdio(
+                            params=params,
+                            name=tool_name,
+                            client_session_timeout_seconds=tool_config.get('client_session_timeout_seconds', 30),
+                        )
+                        self.logger.debug(f"Creating Stdio MCP server with params: {params}")
                         
                     else:
-                        raise ValueError(f"Unsupported connection_type: {connection_type}. Supported types: 'sse', 'streamable_http'")
-                    
-                    self.logger.debug(f"Creating MCP server with params: {params}")
+                        raise ValueError(f"Unsupported connection_type: {connection_type}. Supported types: 'sse', 'streamable_http', 'stdio'")
                     
                     # Create MCP server instance - the Agent class will handle the async context management
 
@@ -238,7 +257,10 @@ class TeamBuilder:
                     self.logger.info(f"✅ Created MCP server for '{tool_name}'")
                         
                 except Exception as e:
-                    error_msg = f"Failed to create MCP server '{tool_name}' at {tool_url}: {e}"
+                    if tool_url:
+                        error_msg = f"Failed to create MCP server '{tool_name}' at {tool_url}: {e}"
+                    else:
+                        error_msg = f"Failed to create MCP stdio server '{tool_name}' with command {tool_command}: {e}"
                     self.logger.error(error_msg)
                     self.logger.error(f"Full traceback: {traceback.format_exc()}")
                     print(f"ERROR: {error_msg}")
@@ -264,8 +286,9 @@ class TeamBuilder:
         for tool_config in config['tools']:
             tool_name = tool_config.get('name')
             tool_url = tool_config.get('url')
+            tool_command = tool_config.get('command')
             
-            if tool_url and tool_name in mcp_servers:
+            if (tool_url or tool_command) and tool_name in mcp_servers:
                 available_servers.append(tool_name)
         
         return available_servers

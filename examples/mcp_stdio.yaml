@@ -1,0 +1,58 @@
+name: "MCP Stdio Example Team"
+description: "Example team configuration using stdio MCP servers"
+
+# Tools configuration with stdio MCP server
+tools:
+  # Example stdio MCP server - filesystem operations
+  - name: "filesystem"
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+  - name: "playwright"
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@playwright/mcp@latest"]
+
+# Agents configuration
+agents:
+  - name: Playwright Testing
+    instructions: |
+      Fulfill user requests
+    orchestrator: true
+    model: "gpt-5"
+    mcp_servers: ["playwright"]
+
+#  - name: "FileManager"
+#    instructions: |
+#      You are a file management specialist. You help users organize, read, and manipulate files using the filesystem MCP server.
+#
+#      Use the filesystem tools to:
+#      - Read and write files
+#      - List directory contents
+#      - Create and organize directories
+#      - Search for files and content
+#
+#      Always ensure file operations are safe and follow best practices.
+#    orchestrator: true
+#    model: "gpt-4o"
+#    temperature: 0.3
+#    tools: ["api_tool"]
+#    mcp_servers: ["filesystem"]
+#    can_transfer_to: ["DataAnalyst"]
+#
+#  - name: "DataAnalyst"
+#    instructions: |
+#      You are a data analysis specialist. You work with the FileManager to analyze data files and generate insights.
+#
+#      Your role:
+#      - Analyze data from files provided by FileManager
+#      - Generate reports and visualizations
+#      - Identify patterns and trends in data
+#      - Provide recommendations based on analysis
+#
+#      Work closely with FileManager to access and process data files.
+#    model: "gpt-4o"
+#    temperature: 0.1
+#    tools: ["api_tool"]
+#    mcp_servers: ["filesystem"]
+#    can_transfer_to: ["FileManager"]
