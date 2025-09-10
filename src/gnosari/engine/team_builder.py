@@ -377,8 +377,8 @@ class TeamBuilder:
             if not hasattr(self, '_delegate_tools'):
                 self._delegate_tools = {}
             self._delegate_tools[name] = delegate_tool
-            # Remove delegate_agent from the regular tools list since we're using the OpenAI version
-            agent_tools.remove("delegate_agent")
+            # # Remove delegate_agent from the regular tools list since we're using the OpenAI version
+            # agent_tools.remove("delegate_agent")
         
         # Handle tools defined in YAML using dynamic loading
         if agent_tools:
@@ -535,6 +535,12 @@ class TeamBuilder:
             if knowledge_names:
                 agent_tools = self._add_knowledge_tools(agent_tools, knowledge_names)
             
+            # Add delegate_agent tool if agent has delegation configuration
+            if agent_config.get('delegation'):
+                if 'delegate_agent' not in agent_tools:
+                    agent_tools.append('delegate_agent')
+                    self.logger.info(f"Auto-added delegate_agent tool to agent '{name}' due to delegation configuration")
+            
             # Build the OpenAI Agent
             agent = self.build_agent(name, instructions, is_orchestrator, config, agent_tools, agent_config, token_callback, agent_mcp_servers)
             
@@ -568,7 +574,22 @@ class TeamBuilder:
             
             if can_transfer_to:
                 handoffs_list = []
-                for target_agent_name in can_transfer_to:
+                handoff_targets = []
+                
+                # Handle both old format (list of strings) and new format (list of objects)
+                for transfer_config in can_transfer_to:
+                    if isinstance(transfer_config, str):
+                        # Old format: just agent name
+                        target_agent_name = transfer_config
+                        transfer_instructions = None
+                    elif isinstance(transfer_config, dict):
+                        # New format: object with agent and instructions
+                        target_agent_name = transfer_config.get('agent')
+                        transfer_instructions = transfer_config.get('instructions')
+                    else:
+                        self.logger.warning(f"Invalid can_transfer_to configuration for agent '{agent_name}': {transfer_config}")
+                        continue
+                    
                     if target_agent_name in all_agents:
                         target_agent = all_agents[target_agent_name]['agent']
                         
@@ -579,7 +600,12 @@ class TeamBuilder:
                             input_type=HandoffEscalationData
                         )
                         handoffs_list.append(handoff_obj)
-                        self.logger.info(f"🔗 Set up handoff from '{agent_name}' to '{target_agent_name}'")
+                        handoff_targets.append(target_agent_name)
+                        
+                        if transfer_instructions:
+                            self.logger.info(f"🔗 Set up handoff from '{agent_name}' to '{target_agent_name}' with instructions: {transfer_instructions}")
+                        else:
+                            self.logger.info(f"🔗 Set up handoff from '{agent_name}' to '{target_agent_name}'")
                     else:
                         self.logger.warning(f"⚠️  Agent '{agent_name}' configured to transfer to '{target_agent_name}', but that agent doesn't exist")
                 
@@ -587,9 +613,9 @@ class TeamBuilder:
                 agent.handoffs = handoffs_list
                 
                 if agent_info['is_orchestrator']:
-                    self.logger.info(f"🎯 Set up handoffs for orchestrator '{agent_name}': {can_transfer_to}")
+                    self.logger.info(f"🎯 Set up handoffs for orchestrator '{agent_name}': {handoff_targets}")
                 else:
-                    self.logger.info(f"🤝 Set up handoffs for worker '{agent_name}': {can_transfer_to}")
+                    self.logger.info(f"🤝 Set up handoffs for worker '{agent_name}': {handoff_targets}")
         
         # Create the team object
         team = Team(orchestrator, workers, name=config.get('name'))

@@ -1,0 +1,41 @@
+knowledge:
+  - data:
+      - http://neomanex.com/page-sitemap.xml
+      - http://neomanex.com/post-sitemap.xml
+    description: 'Knowledge source: 6a939f52-0742-4cc7-aba0-f0112ba7b770'
+    name: 6a939f52-0742-4cc7-aba0-f0112ba7b770
+    type: sitemap
+
+agents:
+  - instructions: 'You are the front facing customer support for Neomanex Website, a
+    company that specializes in building AI products and agents and integrating AI
+    Agents in companies.
+    Respond to user messages based on your injected knowledge.'
+    knowledge:
+      - 6a939f52-0742-4cc7-aba0-f0112ba7b770
+    model: gpt-4o
+    name: Neomanex Website
+    temperature: 0.1
+    tools:
+      - File Ops
+  - can_transfer_to:
+      - agent: Refund Agent
+        instructions: Use the refund agent only to fulfill refund requests.
+    delegation:
+      - agent: Neomanex Website
+        instructions: Use Neomanex Website agent to respond to any Neomanex questions.
+    instructions: You are the coordinator of the front facing customer support of Neomanex
+      Company, a company that specializes in integrating AI into core company processes
+      / workflows. Use the correct agents to fulfill user messages.
+    model: gpt-4o
+    name: Coordinator Agent
+    orchestrator: true
+    temperature: 0.1
+  - instructions: "You are Handling Refunds Requests for Neomanex Company. \n\nReview\
+    \ the refund request and respond with a acknowledged message."
+    model: gpt-4o
+    name: Refund Agent
+    temperature: 0.1
+
+description: This is a description.
+name: Neomanex Website

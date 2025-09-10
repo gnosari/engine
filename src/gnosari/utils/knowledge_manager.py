@@ -7,6 +7,7 @@ import os
 import tempfile
 import re
 from pathlib import Path
+from langchain_community.retrievers import EmbedchainRetriever
 
 try:
     from embedchain import App
@@ -215,12 +216,14 @@ class KnowledgeManager:
             
             # Add data to the app with any additional configuration
             self.logger.info(f'Adding data to knowledge base {name} with type {data_type}')
-            
-            if data_type:
-                app.add(data, data_type=data_type, **kwargs)
-            else:
-                app.add(data, **kwargs)
-            
+
+            # if data_type:
+            #     app.add(data, data_type=data_type, **kwargs)
+            # else:
+            #     app.add(data, **kwargs)
+
+            app.add(data, **kwargs)
+
             # Notify completion if callback provided
             if progress_callback:
                 progress_callback(f"Knowledge {name} loaded successfully")

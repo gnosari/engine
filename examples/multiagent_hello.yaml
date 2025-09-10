@@ -18,9 +18,19 @@ agents:
       4. Always maintain the conversation flow and provide a complete response to the user
     orchestrator: true
     model: gpt-4.1
+    delegation:
+      - agent: Alice
+        instructions: Delegate to Alice if the question is about Apples
+      - agent: Bob
+        instructions: Delegate to Bob for general questions or when Alice is not suitable
+
     tools:
       - delegate_agent
-#    can_transfer_to: [Alice, Bob]
+    can_transfer_to: 
+      - agent: Alice
+        instructions: Transfer to Alice when you need to escalate apple-related discussions
+      - agent: Bob
+        instructions: Transfer to Bob for general assistance or follow-up conversations
 
   - name: Alice
     model: gpt-4.1

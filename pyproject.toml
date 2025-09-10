@@ -23,7 +23,9 @@ dependencies = [
     "pymysql (>=1.1.0,<2.0.0)",
     "embedchain[youtube] (>=0.1.128,<0.2.0)",
     "youtube-transcript-api (>=1.2.2,<2.0.0)",
-    "pytube (>=15.0.0,<16.0.0)"
+    "pytube (>=15.0.0,<16.0.0)",
+    "aiosqlite (>=0.21.0,<0.22.0)",
+    "greenlet (>=3.2.4,<4.0.0)"
 ]
 
 [project.scripts]

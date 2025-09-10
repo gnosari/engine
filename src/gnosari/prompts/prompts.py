@@ -28,25 +28,75 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
     # Load tool definitions if tool_manager is provided
     if tool_manager and team_config and 'tools' in team_config:
         tool_manager.load_tools(team_config)
-    # Get available agents for delegation
+    # Get available agents for delegation (just names)
     available_agents = []
-    agent_descriptions = []
     
     if team_config and 'agents' in team_config:
-        for agent_config in team_config['agents']:
-            agent_name = agent_config['name']
+        for other_agent_config in team_config['agents']:
+            agent_name = other_agent_config['name']
             if agent_name != name:
                 available_agents.append(agent_name)
-                agent_instructions = agent_config['instructions']
-                agent_descriptions.append(f"- {agent_name}: {agent_instructions}")
+    
+    # Add delegation and handoff mechanisms explanation if either is configured
+    has_delegation = agent_config and 'delegation' in agent_config and agent_config['delegation']
+    has_handoffs = agent_config and 'can_transfer_to' in agent_config and agent_config['can_transfer_to']
     
     background = [
         f"You are {name}, an autonomous agent.",
-        f"Available agents for delegation:",
-        *agent_descriptions,
+        "",
+        instructions,
         "",
     ]
     
+    # Only show generic "Available agents" if no specific delegation instructions are configured
+    if not has_delegation and available_agents:
+        background.extend([
+            f"Other agents in the team: {', '.join(available_agents)}",
+            "",
+        ])
+    
+    if has_delegation or has_handoffs:
+        background.append("You have the following mechanisms for working with other agents:")
+        if has_delegation:
+            background.append("1. DELEGATION: Use the delegate_agent tool to send tasks to other agents and get their responses")
+        if has_handoffs:
+            background.append("2. HANDOFFS: Transfer control to other agents when they should take over the conversation")
+        background.append("")
+    
+    # Add delegation instructions if specified
+    if agent_config and 'delegation' in agent_config:
+        delegation_config = agent_config['delegation']
+        if delegation_config:
+            background.append("DELEGATION INSTRUCTIONS:")
+            background.append("When using the delegate_agent tool, follow these specific instructions:")
+            for del_config in delegation_config:
+                if isinstance(del_config, dict):
+                    agent_name = del_config.get('agent')
+                    del_instructions = del_config.get('instructions')
+                    if agent_name and del_instructions:
+                        background.append(f"- {agent_name}: {del_instructions}")
+                    elif agent_name:
+                        background.append(f"- {agent_name}: Available for delegation")
+            background.append("")
+
+    # Add handoff instructions if specified
+    if agent_config and 'can_transfer_to' in agent_config:
+        can_transfer_to = agent_config['can_transfer_to']
+        if can_transfer_to:
+            background.append("HANDOFF INSTRUCTIONS:")
+            background.append("When transferring control to other agents, consider these guidelines:")
+            for transfer_config in can_transfer_to:
+                if isinstance(transfer_config, dict):
+                    agent_name = transfer_config.get('agent')
+                    transfer_instructions = transfer_config.get('instructions')
+                    if agent_name and transfer_instructions:
+                        background.append(f"- {agent_name}: {transfer_instructions}")
+                    elif agent_name:
+                        background.append(f"- {agent_name}: Available for handoff")
+                elif isinstance(transfer_config, str):
+                    background.append(f"- {transfer_config}: Available for handoff")
+            background.append("")
+
     # Add knowledge base information if agent has knowledge access
     if agent_config and 'knowledge' in agent_config:
         knowledge_names = agent_config['knowledge']
@@ -71,9 +121,7 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
     tool_sections = get_tools_definition(agent_tools, tool_manager)
     background.extend(tool_sections)
     
-    steps = [
-        instructions
-    ]
+    steps = []
     
     output_instructions = [
         "Respond naturally to the user's request. If you need to delegate tasks to other agents, use the available tools.",
@@ -102,9 +150,37 @@ def build_specialized_agent_system_prompt(name: str, instructions: str, agent_to
         f"You are {name}, an autonomous specialized agent. You are given tasks and you have to execute them using the available tools.",
         "",
         "IMPORTANT: Analyze each request and use tools.",
-        ""
+        "",
+        instructions,
+        "",
     ]
     
+    # Add handoff mechanism explanation if configured
+    has_handoffs = agent_config and 'can_transfer_to' in agent_config and agent_config['can_transfer_to']
+    
+    if has_handoffs:
+        background.append("You have the ability to transfer control to other agents:")
+        background.append("- HANDOFFS: Transfer control to other agents when they should take over the conversation")
+        background.append("")
+    
+    # Add handoff instructions if specified
+    if agent_config and 'can_transfer_to' in agent_config:
+        can_transfer_to = agent_config['can_transfer_to']
+        if can_transfer_to:
+            background.append("HANDOFF INSTRUCTIONS:")
+            background.append("When you need to transfer control to other agents, consider these guidelines:")
+            for transfer_config in can_transfer_to:
+                if isinstance(transfer_config, dict):
+                    agent_name = transfer_config.get('agent')
+                    transfer_instructions = transfer_config.get('instructions')
+                    if agent_name and transfer_instructions:
+                        background.append(f"- {agent_name}: {transfer_instructions}")
+                    elif agent_name:
+                        background.append(f"- {agent_name}: Available for handoff")
+                elif isinstance(transfer_config, str):
+                    background.append(f"- {transfer_config}: Available for handoff")
+            background.append("")
+
     # Add knowledge base information if agent has knowledge access
     if agent_config and 'knowledge' in agent_config:
         knowledge_names = agent_config['knowledge']
@@ -131,9 +207,7 @@ def build_specialized_agent_system_prompt(name: str, instructions: str, agent_to
     tool_sections = get_tools_definition(agent_tools, tool_manager)
     background.extend(tool_sections)
     
-    steps = [
-        instructions
-    ]
+    steps = []
     
     output_instructions = [
         "Respond naturally to the user's request using the available tools when needed.",

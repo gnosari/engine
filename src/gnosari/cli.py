@@ -25,9 +25,77 @@ from rich.syntax import Syntax
 
 from .engine.team_builder import TeamBuilder
 from .engine.team_runner import TeamRunner
+from .prompts.prompts import build_orchestrator_system_prompt, build_specialized_agent_system_prompt
 
 
-async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message: str, debug: bool = False):
+async def show_team_prompts(config_path: str, model: str = "gpt-4o", temperature: float = 1.0):
+    """Display the generated system prompts for all agents in a team configuration."""
+    console = Console()
+    
+    try:
+        # Create team builder (no API key needed for prompt generation)
+        builder = TeamBuilder(model=model, temperature=temperature)
+        
+        # Load team configuration
+        config = builder.load_team_config(config_path)
+        
+        # Load knowledge bases if they exist
+        if 'knowledge' in config:
+            builder._load_knowledge_bases(config['knowledge'])
+        
+        # Load tools and register them
+        builder._ensure_tool_manager()
+        if 'tools' in config:
+            builder.tool_manager.load_tools(config)
+        
+        console.print(f"\n[bold blue]Team Configuration:[/bold blue] {config_path}")
+        console.print(f"[bold blue]Team Name:[/bold blue] {config.get('name', 'Unnamed Team')}")
+        console.print(f"[bold blue]Description:[/bold blue] {config.get('description', 'No description')}\n")
+        
+        # Process each agent
+        for agent_config in config['agents']:
+            agent_name = agent_config['name']
+            agent_instructions = agent_config['instructions']
+            is_orchestrator = agent_config.get('orchestrator', False)
+            agent_tools = agent_config.get('tools', [])
+            
+            # Generate system prompt
+            if is_orchestrator:
+                prompt_components = build_orchestrator_system_prompt(
+                    agent_name, agent_instructions, config, agent_tools, 
+                    builder.tool_manager, agent_config, builder.knowledge_descriptions
+                )
+                agent_type = "Orchestrator"
+            else:
+                prompt_components = build_specialized_agent_system_prompt(
+                    agent_name, agent_instructions, agent_tools, 
+                    builder.tool_manager, agent_config, builder.knowledge_descriptions
+                )
+                agent_type = "Specialized Agent"
+            
+            # Combine all prompt components
+            full_prompt = f"{chr(10).join(prompt_components['background'])}\\n\\n{chr(10).join(prompt_components['steps'])}\\n\\n{chr(10).join(prompt_components['output_instructions'])}"
+            
+            # Display agent information
+            console.print(f"[bold green]{'='*60}[/bold green]")
+            console.print(f"[bold green]Agent:[/bold green] {agent_name} ({agent_type})")
+            console.print(f"[bold green]Model:[/bold green] {agent_config.get('model', model)}")
+            console.print(f"[bold green]Temperature:[/bold green] {agent_config.get('temperature', temperature)}")
+            if agent_tools:
+                console.print(f"[bold green]Tools:[/bold green] {', '.join(agent_tools)}")
+            console.print(f"[bold green]{'='*60}[/bold green]")
+            
+            # Display the system prompt with syntax highlighting
+            syntax = Syntax(full_prompt, "text", theme="monokai", line_numbers=False, word_wrap=True)
+            console.print(syntax)
+            console.print()
+    
+    except Exception as e:
+        console.print(f"[red]Error displaying prompts: {e}[/red]")
+        raise
+
+
+async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message: str, debug: bool = False, session_id: str = None):
     """Run single agent with streaming response using Rich console and provide execution summary."""
     console = Console()
     
@@ -54,6 +122,7 @@ async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message
     console.print("=" * 80, style="dim")
     console.print(f"🤖 [blue]Agent:[/blue] {agent_name}")
     console.print(f"📝 [blue]Message:[/blue] {message}")
+    console.print(f"🔗 [blue]Session:[/blue] {session_id}")
     console.print("=" * 80, style="dim")
     console.print()
     
@@ -68,7 +137,7 @@ async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message
         console.print("─" * 80, style="dim")
         
         event_count = 0
-        async for output in executor.run_single_agent_stream(agent_name, message, debug):
+        async for output in executor.run_single_agent_stream(agent_name, message, debug, session_id=session_id):
             event_count += 1
             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             
@@ -131,7 +200,7 @@ async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message
             import logging
             logging.getLogger().setLevel(logging.ERROR)
             
-            async for output in executor.run_single_agent_stream(agent_name, message, debug):
+            async for output in executor.run_single_agent_stream(agent_name, message, debug, session_id=session_id):
                 event_count += 1
                 timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 event_type = output.get("type", "unknown")
@@ -195,6 +264,7 @@ async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message
     
     # Summary statistics
     console.print(f"📊 [bold]Statistics:[/bold]")
+    console.print(f"   • Session ID: {session_id}")
     console.print(f"   • Total steps: {len(execution_steps)}")
     console.print(f"   • Agent: {agent_name}")
     console.print(f"   • Tools used: {len(tools_used)} ({', '.join(sorted(tools_used)) if tools_used else 'None'})")
@@ -219,7 +289,7 @@ async def run_single_agent_stream(executor: TeamRunner, agent_name: str, message
     console.print("="*80)
 
 
-async def run_team_stream(executor: TeamRunner, message: str, debug: bool = False):
+async def run_team_stream(executor: TeamRunner, message: str, debug: bool = False, session_id: str = None):
     """Run team with streaming response using Rich console and provide execution summary."""
     console = Console()
     
@@ -248,6 +318,7 @@ async def run_team_stream(executor: TeamRunner, message: str, debug: bool = Fals
     console.print("🚀 [bold blue]GNOSARI TEAM EXECUTION[/bold blue]", style="bold")
     console.print("=" * 80, style="dim")
     console.print(f"📝 [blue]Message:[/blue] {message}")
+    console.print(f"🔗 [blue]Session:[/blue] {session_id}")
     console.print("=" * 80, style="dim")
     console.print()
     
@@ -262,7 +333,7 @@ async def run_team_stream(executor: TeamRunner, message: str, debug: bool = Fals
         console.print("─" * 80, style="dim")
         
         event_count = 0
-        async for output in executor.run_team_stream(message, debug):
+        async for output in executor.run_team_stream(message, debug, session_id=session_id):
             event_count += 1
             timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
             
@@ -363,7 +434,7 @@ async def run_team_stream(executor: TeamRunner, message: str, debug: bool = Fals
             import logging
             logging.getLogger().setLevel(logging.ERROR)
             
-            async for output in executor.run_team_stream(message, debug):
+            async for output in executor.run_team_stream(message, debug, session_id=session_id):
                 event_count += 1
                 timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
                 event_type = output.get("type", "unknown")
@@ -457,6 +528,7 @@ async def run_team_stream(executor: TeamRunner, message: str, debug: bool = Fals
     
     # Summary statistics
     console.print(f"📊 [bold]Statistics:[/bold]")
+    console.print(f"   • Session ID: {session_id}")
     console.print(f"   • Total steps: {len(execution_steps)}")
     console.print(f"   • Agents involved: {len(agents_involved)} ({', '.join(sorted(agents_involved))})")
     console.print(f"   • Tools used: {len(tools_used)} ({', '.join(sorted(tools_used)) if tools_used else 'None'})")
@@ -549,21 +621,42 @@ def main() -> NoReturn:
     
     # Main arguments for team run
     parser.add_argument("--config", "-c", required=True, help="Path to team configuration YAML file")
-    parser.add_argument("--message", "-m", required=True, help="Message to send to the team")
+    parser.add_argument("--message", "-m", help="Message to send to the team")
     parser.add_argument("--agent", "-a", help="Run only a specific agent from the team (by name)")
+    parser.add_argument("--session-id", "-s", help="Session ID for conversation persistence (generates new if not provided)")
     parser.add_argument("--api-key", help="OpenAI API key (or set OPENAI_API_KEY env var)")
     parser.add_argument("--model", default=os.getenv("OPENAI_MODEL", "gpt-4o"), help="Model to use (default: gpt-4o)")
     parser.add_argument("--temperature", type=float, default=float(os.getenv("OPENAI_TEMPERATURE", "1")), help="Model temperature (default: 1.0)")
     parser.add_argument("--stream", action="store_true", help="Stream the response in real-time")
     parser.add_argument("--debug", action="store_true", help="Show debug information with raw JSON output")
+    parser.add_argument("--show-prompts", action="store_true", help="Display the generated system prompts for all agents in the team")
     
     args = parser.parse_args()
     
-    # Get API key from args or environment
+    # Validate arguments
+    if not args.show_prompts and not args.message:
+        print("Error: --message is required when not using --show-prompts")
+        sys.exit(1)
+    
+    # Get API key from args or environment (only needed for non-prompt-only operations)
     api_key = args.api_key or os.getenv("OPENAI_API_KEY")
-    if not api_key:
+    if not args.show_prompts and not api_key:
         print("Error: OpenAI API key is required. Set it with --api-key, OPENAI_API_KEY environment variable, or in .env file.")
         sys.exit(1)
+    
+    # Handle show-prompts command
+    if args.show_prompts:
+        # Just show prompts and exit
+        async def show_prompts_async():
+            await show_team_prompts(args.config, args.model, args.temperature)
+        
+        asyncio.run(show_prompts_async())
+        sys.exit(0)
+    
+    # Generate session ID if not provided
+    import uuid
+    session_id = args.session_id or f"cli-session-{uuid.uuid4().hex[:8]}"
+    print(f"Session ID: {session_id}")
     
     # Create OpenAI team orchestrator and run team
     async def run_team_async():
@@ -601,11 +694,11 @@ def main() -> NoReturn:
                 # Run single agent
                 if args.stream:
                     print(f"\nRunning agent '{args.agent}' with streaming...")
-                    await run_single_agent_stream(runner, args.agent, args.message, args.debug)
+                    await run_single_agent_stream(runner, args.agent, args.message, args.debug, session_id)
                 else:
                     print(f"\nRunning agent '{args.agent}' with message: {args.message}")
                     result = await runner.run_agent_until_done_async(
-                        target_agent, args.message
+                        target_agent, args.message, session_id=session_id
                     )
                     
                     # Extract and display response
@@ -621,11 +714,11 @@ def main() -> NoReturn:
             elif args.stream:
                 # Run with streaming
                 print(f"\nRunning team with streaming...")
-                await run_team_stream(runner, args.message, args.debug)
+                await run_team_stream(runner, args.message, args.debug, session_id)
             else:
                 # Run without streaming
                 print(f"\nRunning team with message: {args.message}")
-                result = await runner.run_team_async(args.message, args.debug)
+                result = await runner.run_team_async(args.message, args.debug, session_id=session_id)
                 print(f"\nTeam Response:")
                 
                 # Extract response content from OpenAI Runner result

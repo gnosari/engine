@@ -23,8 +23,12 @@ Each agent can use different models from various providers:
 - Google (Gemini)
 - And more...
 
-### Task Delegation
-Agents use the delegate_agent tool to send tasks to other agents and receive responses, enabling seamless multi-agent coordination.
+### Task Delegation & Handoffs
+Agents can both delegate tasks and transfer control with configurable instructions:
+- **Delegation**: Use the delegate_agent tool to send tasks to other agents and get their responses
+- **Handoffs**: Transfer control to other agents when they should take over the conversation
+- **Configurable Instructions**: Specify exactly when and how agents should delegate or transfer control
+- **Auto-Tool Injection**: The delegate_agent tool is automatically added when delegation is configured
 
 ### Tool Integration
 - Built-in tools (delegate_agent, api_request, knowledge_query, mysql_query, website_content, file_operations)
@@ -128,6 +132,69 @@ poetry run gnosari --config "my-first-team.yaml" --message "Your message" --debu
 ```
 
 ## Advanced Configuration
+
+### Delegation and Handoff Instructions
+
+Configure specific delegation and handoff behavior with detailed instructions:
+
+```yaml
+name: Advanced Coordination Team
+
+# The delegate_agent tool is automatically added when delegation is configured
+tools:
+  - name: delegate_agent
+    module: gnosari.tools.delegate_agent
+    class: DelegateAgentTool
+    args:
+      pass
+
+agents:
+  - name: Coordinator
+    instructions: >
+      You are a coordinator who manages conversations and tasks with multiple specialized agents.
+      You have two main mechanisms for working with other agents:
+      1. DELEGATION: Use the delegate_agent tool to send tasks to other agents and get their responses
+      2. HANDOFFS: Transfer control to other agents when they should take over the conversation
+    orchestrator: true
+    model: gpt-4o
+    # Configure which agents to delegate to and when
+    delegation:
+      - agent: Alice
+        instructions: Delegate to Alice for questions about fruits, especially apples, or when detailed fruit knowledge is needed
+      - agent: Bob
+        instructions: Delegate to Bob for general questions, math problems, or when Alice cannot help
+    # Configure which agents to transfer control to and when
+    can_transfer_to: 
+      - agent: Alice
+        instructions: Transfer to Alice when the user wants to have an ongoing conversation about fruits or gardening
+      - agent: Bob
+        instructions: Transfer to Bob for complex problem-solving sessions or when extended technical discussion is needed
+    # Note: delegate_agent tool is automatically added due to delegation configuration
+    # tools:
+    #   - delegate_agent
+
+  - name: Alice
+    model: gpt-4o
+    instructions: >
+      You are Alice, a fruit specialist with deep knowledge about apples, orchards, and fruit cultivation.
+      Provide detailed, accurate information about fruits and respond helpfully to questions in your domain.
+    can_transfer_to:
+      - agent: Bob
+        instructions: Transfer to Bob if asked about topics outside fruit/gardening expertise
+      - agent: Coordinator
+        instructions: Transfer back to Coordinator when the conversation should be coordinated with multiple agents
+
+  - name: Bob
+    model: gpt-4o
+    instructions: >
+      You are Bob, a general-purpose assistant skilled in mathematics, problem-solving, and general knowledge.
+      Provide clear, accurate responses and help with a wide range of topics.
+    can_transfer_to:
+      - agent: Alice
+        instructions: Transfer to Alice for any fruit, apple, or gardening related questions
+      - agent: Coordinator
+        instructions: Transfer back to Coordinator when complex multi-agent coordination is needed
+```
 
 ### Team with Knowledge Bases and Tools
 
@@ -243,6 +310,12 @@ poetry run gnosari --config "team.yaml" --message "Your message" --debug
 
 # With custom model and temperature
 poetry run gnosari --config "team.yaml" --message "Your message" --model "gpt-4o" --temperature 0.7
+
+# View generated system prompts (useful for debugging and understanding agent behavior)
+poetry run gnosari --config "team.yaml" --show-prompts
+
+# View prompts with specific model/temperature settings
+poetry run gnosari --config "team.yaml" --show-prompts --model "gpt-4o" --temperature 0.5
 ```
 
 ## Architecture

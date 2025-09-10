@@ -6,6 +6,7 @@ import logging
 import asyncio
 from typing import Optional, AsyncGenerator, Dict, Any
 from agents import Runner, RunConfig
+from agents.extensions.memory.sqlalchemy_session import SQLAlchemySession
 
 from .team import Team
 from .event_handlers import StreamEventHandler, ErrorHandler, MCPServerManager
@@ -18,13 +19,30 @@ class TeamRunner:
         self.team = team
         self.logger = logging.getLogger(__name__)
     
-    async def run_team_async(self, message: str, debug: bool = False) -> Dict[str, Any]:
+    def _get_session(self, session_id: Optional[str] = None) -> Optional[SQLAlchemySession]:
+        """Get SQLAlchemy session for persistence."""
+        if session_id:
+            self.logger.info(f"Creating SQLAlchemy session for session_id: {session_id}")
+            self.logger.info("Using SQLite database: conversations.db")
+            session = SQLAlchemySession.from_url(
+                session_id,
+                url="sqlite+aiosqlite:///conversations.db",
+                create_tables=True
+            )
+            self.logger.info(f"SQLAlchemy session created successfully for session: {session_id}")
+            return session
+        else:
+            self.logger.info("No session_id provided - running without persistent memory")
+            return None
+    
+    async def run_team_async(self, message: str, debug: bool = False, session_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Run team asynchronously using OpenAI Agents SDK Runner.
         
         Args:
             message: User message
             debug: Whether to show debug info
+            session_id: Session ID for conversation persistence
             
         Returns:
             Dict with outputs and completion status
@@ -41,8 +59,13 @@ class TeamRunner:
             run_config = RunConfig(
                 workflow_name=self.team.name or "Unknown Team",
             )
-
-            result = await Runner.run(self.team.orchestrator, input=message, run_config=run_config)
+            
+            session = self._get_session(session_id)
+            if session:
+                self.logger.info(f"Running team with persistent session: {session_id}")
+            else:
+                self.logger.info("Running team without session persistence")
+            result = await Runner.run(self.team.orchestrator, input=message, run_config=run_config, session=session)
             
             # Convert result to our expected format
             return {
@@ -54,17 +77,18 @@ class TeamRunner:
             # Clean up MCP servers after running
             await mcp_manager.cleanup_servers(all_agents)
     
-    def run_team(self, message: str, debug: bool = False) -> Dict[str, Any]:
+    def run_team(self, message: str, debug: bool = False, session_id: Optional[str] = None) -> Dict[str, Any]:
         """Run team synchronously."""
-        return asyncio.run(self.run_team_async(message, debug))
+        return asyncio.run(self.run_team_async(message, debug, session_id))
     
-    async def run_team_stream(self, message: str, debug: bool = False) -> AsyncGenerator[Dict[str, Any], None]:
+    async def run_team_stream(self, message: str, debug: bool = False, session_id: Optional[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Run team with streaming outputs using OpenAI Agents SDK.
         
         Args:
             message: User message
             debug: Whether to show debug info
+            session_id: Session ID for conversation persistence
             
         Yields:
             Dict: Stream outputs (response chunks, tool calls, handoffs, etc.)
@@ -87,7 +111,12 @@ class TeamRunner:
                 workflow_name=self.team.name or "Unknown Team",
             )
             
-            result = Runner.run_streamed(self.team.orchestrator, input=message, run_config=run_config)
+            session = self._get_session(session_id)
+            if session:
+                self.logger.info(f"Running team stream with persistent session: {session_id}")
+            else:
+                self.logger.info("Running team stream without session persistence")
+            result = Runner.run_streamed(self.team.orchestrator, input=message, run_config=run_config, session=session)
             
             self.logger.info("Starting to process streaming events...")
             
@@ -120,18 +149,24 @@ class TeamRunner:
             # Clean up MCP servers after streaming is complete
             await mcp_manager.cleanup_servers(all_agents)
     
-    async def run_agent_until_done_async(self, agent, message: str) -> Dict[str, Any]:
+    async def run_agent_until_done_async(self, agent, message: str, session_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Run a specific agent until completion.
         
         Args:
             agent: The agent to run
             message: Message to send
+            session_id: Session ID for conversation persistence
             
         Returns:
             Dict with agent outputs
         """
-        result = await Runner.run(agent, input=message)
+        session = self._get_session(session_id)
+        if session:
+            self.logger.info(f"Running agent '{agent.name}' with persistent session: {session_id}")
+        else:
+            self.logger.info(f"Running agent '{agent.name}' without session persistence")
+        result = await Runner.run(agent, input=message, session=session)
         
         return {
             "outputs": [{"type": "completion", "content": result.final_output}],
@@ -139,7 +174,7 @@ class TeamRunner:
             "is_done": True
         }
     
-    async def run_single_agent_stream(self, agent_name: str, message: str, debug: bool = False) -> AsyncGenerator[Dict[str, Any], None]:
+    async def run_single_agent_stream(self, agent_name: str, message: str, debug: bool = False, session_id: Optional[str] = None) -> AsyncGenerator[Dict[str, Any], None]:
         """
         Run a specific agent with streaming outputs using OpenAI Agents SDK.
         
@@ -147,6 +182,7 @@ class TeamRunner:
             agent_name: Name of the agent to run
             message: User message
             debug: Whether to show debug info
+            session_id: Session ID for conversation persistence
             
         Yields:
             Dict: Stream outputs (response chunks, tool calls, etc.)
@@ -177,7 +213,12 @@ class TeamRunner:
                 workflow_name=agent_name,
             )
 
-            result = Runner.run_streamed(target_agent, input=message, run_config=run_config)
+            session = self._get_session(session_id)
+            if session:
+                self.logger.info(f"Running single agent '{agent_name}' stream with persistent session: {session_id}")
+            else:
+                self.logger.info(f"Running single agent '{agent_name}' stream without session persistence")
+            result = Runner.run_streamed(target_agent, input=message, run_config=run_config, session=session)
             
             self.logger.info(f"Starting to process streaming events for agent: {agent_name}")
             
