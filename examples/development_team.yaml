@@ -1,0 +1,92 @@
+name: "My Development Team"
+description: "Example team configuration using stdio MCP servers"
+
+# Tools configuration with stdio MCP server
+tools:
+  - name: "filesystem"
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+
+  - name: "playwright"
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@playwright/mcp@latest"]
+
+  - name: "bash"
+    connection_type: "stdio"
+    command: "npx"
+    args: [
+      "-y",
+      "super-shell-mcp"
+    ]
+    alwaysAllow: ['get_platform_info', 'execute_command', 'get_whitelist', 'add_to_whitelist', 'update_security_level', ;]
+    disabled: false
+
+# Agents configuration
+agents:
+  - name: Technical Lead
+    instructions: >
+      You are the technical lead of a team of developers. Orchestrate the team to fulfill user requests.
+    delegation:
+      - agent: 'Developer'
+        instructions: 'Contact to start developing something.'
+    orchestrator: true
+
+  - name: Developer
+    instructions: > 
+      You are a developer that can uses cursor-agent using bash in headless mode to accomplish your goal. 
+      Use cursor agent for complex tasks that require multiple files being created / edited
+      Example to use cursor agent:
+      ```
+      cursor-agent -p --force "Task Description"
+      ```
+      
+      You can also write files by yourself.
+    mcp_servers: ["filesystem", "bash"]
+    delegation:
+      - name: QA Agent
+        instructions: > 
+          After completing the task contact QA Agent with the steps and instructions to test your task. 
+          Always is prefered to use docker so that QA can test tasks locally without blocking commands (eg. no run the server interactive). 
+          eg. start the server, and navigate to this page, etc..
+  - name: QA Agent
+    instructions: |
+      You are QA agent.
+    model: "gpt-5"
+    mcp_servers: ["playwright", "bash"]
+
+#  - name: "FileManager"
+#    instructions: |
+#      You are a file management specialist. You help users organize, read, and manipulate files using the filesystem MCP server.
+#
+#      Use the filesystem tools to:
+#      - Read and write files
+#      - List directory contents
+#      - Create and organize directories
+#      - Search for files and content
+#
+#      Always ensure file operations are safe and follow best practices.
+#    orchestrator: true
+#    model: "gpt-4o"
+#    temperature: 0.3
+#    tools: ["api_tool"]
+#    mcp_servers: ["filesystem"]
+#    can_transfer_to: ["DataAnalyst"]
+#
+#  - name: "DataAnalyst"
+#    instructions: |
+#      You are a data analysis specialist. You work with the FileManager to analyze data files and generate insights.
+#
+#      Your role:
+#      - Analyze data from files provided by FileManager
+#      - Generate reports and visualizations
+#      - Identify patterns and trends in data
+#      - Provide recommendations based on analysis
+#
+#      Work closely with FileManager to access and process data files.
+#    model: "gpt-4o"
+#    temperature: 0.1
+#    tools: ["api_tool"]
+#    mcp_servers: ["filesystem"]
+#    can_transfer_to: ["FileManager"]
