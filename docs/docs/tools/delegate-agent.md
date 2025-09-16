@@ -4,6 +4,10 @@ sidebar_position: 2
 
 # Delegate Agent Tool
 
+:::info Automatic Tool
+This documentation is **purely informational**. The `delegate_agent` tool is **automatically added** to any agent (orchestrator or regular) when agent delegation configuration is present in your team setup. You do not need to manually configure this tool in your YAML files.
+:::
+
 The **delegate_agent** tool enables agents to delegate tasks to other agents within the same team. This is the core mechanism for multi-agent coordination and task distribution in Gnosari AI Teams.
 
 ## Overview

@@ -9,7 +9,7 @@ from agents import Agent
 class Team:
     """Team object containing orchestrator and worker agents using OpenAI Agents SDK."""
     
-    def __init__(self, orchestrator: Agent, workers: Dict[str, Agent], name: Optional[str] = None):
+    def __init__(self, orchestrator: Agent, workers: Dict[str, Agent], name: Optional[str] = None, max_turns: Optional[int] = None):
         """Initialize the team.
         
         Args:
@@ -20,6 +20,7 @@ class Team:
         self.orchestrator = orchestrator
         self.workers = workers
         self.name = name
+        self.max_turns = max_turns
         self.all_agents = {**workers, orchestrator.name: orchestrator}
 
     def get_agent(self, name: str) -> Optional[Agent]:

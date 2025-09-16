@@ -133,6 +133,124 @@ poetry run gnosari --config "my-first-team.yaml" --message "Your message" --debu
 
 ## Advanced Configuration
 
+### Session Configuration
+
+Gnosari supports persistent conversation memory through a custom `GnosariContextSession` implementation that extends the OpenAI Agents SDK session functionality. This custom implementation provides enhanced context storage, multi-backend support, and API integration capabilities. Configure session persistence using environment variables:
+
+#### Environment Variables
+
+- **`SESSION_PROVIDER`**: Session storage provider (default: `file`)
+  - `file`: SQLite file-based storage (suitable for development and single-instance deployments)
+  - `database`: External database storage (suitable for production and multi-instance deployments)  
+  - `gnosari_api`: API-based distributed storage (suitable for distributed deployments)
+
+- **`SESSION_DATABASE_URL`**: Database connection URL (required for `database` provider)
+- **`GNOSARI_API_BASE_URL`**: Base URL for API provider (required for `gnosari_api`)
+- **`GNOSARI_API_KEY`**: Authentication key for API provider (required for `gnosari_api`)
+
+#### File-Based Sessions (Default)
+
+For development and simple deployments, sessions are stored in local SQLite files:
+
+```bash
+# Optional: Specify custom SQLite file location
+export SESSION_PROVIDER=file
+export SESSION_DATABASE_URL=sqlite+aiosqlite:///my_conversations.db
+
+# Run your team with session persistence
+poetry run gnosari --config "team.yaml" --message "Hello" --session-id "user-123"
+```
+
+**Supported SQLite URLs:**
+- `sqlite+aiosqlite:///conversations.db` (relative path)
+- `sqlite+aiosqlite:////absolute/path/to/conversations.db` (absolute path)
+- `sqlite+aiosqlite:///:memory:` (in-memory database)
+
+#### Database-Based Sessions
+
+For production deployments with multiple instances, use external databases:
+
+```bash
+# PostgreSQL (Recommended for production)
+export SESSION_PROVIDER=database
+export SESSION_DATABASE_URL=postgresql+asyncpg://username:password@localhost:5432/gnosari_sessions
+
+# MySQL/MariaDB
+export SESSION_PROVIDER=database
+export SESSION_DATABASE_URL=mysql+aiomysql://username:password@localhost:3306/gnosari_sessions
+
+# Run your team with persistent sessions
+poetry run gnosari --config "team.yaml" --message "Hello" --session-id "user-123"
+```
+
+**Supported Database URLs:**
+
+| Database | URL Format | Notes |
+|----------|------------|-------|
+| **PostgreSQL** | `postgresql+asyncpg://user:pass@host:port/db` | Recommended for production |
+| **MySQL** | `mysql+aiomysql://user:pass@host:port/db` | Good alternative for production |
+| **SQLite** | `sqlite+aiosqlite:///path/to/file.db` | Development and single-instance |
+
+#### API-Based Sessions
+
+For distributed deployments, sessions can be stored via the Gnosari API backend:
+
+```bash
+# API-based sessions (distributed storage)
+export SESSION_PROVIDER=gnosari_api
+export GNOSARI_API_BASE_URL=http://localhost:8001
+export GNOSARI_API_KEY=your-api-key-here
+
+# Run your team with API-backed persistent sessions
+poetry run gnosari --config "team.yaml" --message "Hello" --session-id "user-123"
+```
+
+**API Session Features:**
+- **Distributed**: Multiple engine instances share session storage
+- **Context Aware**: Automatically stores account, team, and agent context
+- **REST API**: Uses standard HTTP REST API for session operations  
+- **Authentication**: Secured with API key authentication
+- **Fallback Ready**: Can fall back to local storage if API is unavailable
+
+#### Database Setup
+
+For external databases, ensure the session tables exist before running:
+
+1. **Create the database** (if it doesn't exist)
+2. **Run migrations** using your database migration tool, or
+3. **Create tables manually**:
+
+```sql
+-- PostgreSQL/MySQL
+CREATE TABLE agent_sessions (
+    session_id VARCHAR(255) PRIMARY KEY,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+CREATE TABLE agent_messages (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(255) NOT NULL,
+    message_data TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES agent_sessions(session_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_agent_messages_session_time ON agent_messages(session_id, created_at);
+```
+
+#### Session Usage
+
+Sessions enable conversation continuity across multiple interactions:
+
+```bash
+# First conversation
+poetry run gnosari --config "team.yaml" --message "My name is Alice" --session-id "user-123"
+
+# Later conversation (remembers previous context)  
+poetry run gnosari --config "team.yaml" --message "What's my name?" --session-id "user-123"
+```
+
 ### Delegation and Handoff Instructions
 
 Configure specific delegation and handoff behavior with detailed instructions:

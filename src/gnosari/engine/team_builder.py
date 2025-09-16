@@ -356,8 +356,9 @@ class TeamBuilder:
         # Create model settings
         model_settings = ModelSettings(
             temperature=agent_temperature,
-            api_key=api_key,
-            base_url=base_url
+            # timeout=300.0,
+            # api_key=api_key,
+            # base_url=base_url
         )
         
         # Build list of OpenAI native tools
@@ -443,7 +444,7 @@ class TeamBuilder:
             model=agent_model,
             model_settings=model_settings,
             tools=openai_tools,
-            mcp_servers=mcp_servers or []
+            mcp_servers=mcp_servers or [],
         )
         
         # Add knowledge manager to the agent's context if available
@@ -618,7 +619,8 @@ class TeamBuilder:
                     self.logger.info(f"🤝 Set up handoffs for worker '{agent_name}': {handoff_targets}")
         
         # Create the team object
-        team = Team(orchestrator, workers, name=config.get('name'))
+        max_turns = config.get('config', {}).get('max_turns')
+        team = Team(orchestrator, workers, name=config.get('name'), max_turns=max_turns)
         
         # Set up team dependencies for delegate_agent tools if needed
         if has_delegation or hasattr(self, '_delegate_tools'):

@@ -43,6 +43,8 @@ class StreamEventHandler:
     
     async def _handle_raw_response_event(self, event) -> AsyncGenerator[Dict[str, Any], None]:
         """Handle raw response events with text delta data."""
+
+        logging.debug("Received raw response event: %s", str(event))
         if hasattr(event, 'data') and event.data is not None:
             if isinstance(event.data, ResponseOutputItemDoneEvent):
                 item = event.data

@@ -155,14 +155,34 @@ def build_specialized_agent_system_prompt(name: str, instructions: str, agent_to
         "",
     ]
     
-    # Add handoff mechanism explanation if configured
+    # Add delegation and handoff mechanisms explanation if either is configured
+    has_delegation = agent_config and 'delegation' in agent_config and agent_config['delegation']
     has_handoffs = agent_config and 'can_transfer_to' in agent_config and agent_config['can_transfer_to']
     
-    if has_handoffs:
-        background.append("You have the ability to transfer control to other agents:")
-        background.append("- HANDOFFS: Transfer control to other agents when they should take over the conversation")
+    if has_delegation or has_handoffs:
+        background.append("You have the following mechanisms for working with other agents:")
+        if has_delegation:
+            background.append("1. DELEGATION: Use the delegate_agent tool to send tasks to other agents and get their responses")
+        if has_handoffs:
+            background.append("2. HANDOFFS: Transfer control to other agents when they should take over the conversation")
         background.append("")
     
+    # Add delegation instructions if specified
+    if agent_config and 'delegation' in agent_config:
+        delegation_config = agent_config['delegation']
+        if delegation_config:
+            background.append("DELEGATION INSTRUCTIONS:")
+            background.append("When using the delegate_agent tool, follow these specific instructions:")
+            for del_config in delegation_config:
+                if isinstance(del_config, dict):
+                    agent_name = del_config.get('agent')
+                    del_instructions = del_config.get('instructions')
+                    if agent_name and del_instructions:
+                        background.append(f"- {agent_name}: {del_instructions}")
+                    elif agent_name:
+                        background.append(f"- {agent_name}: Available for delegation")
+            background.append("")
+
     # Add handoff instructions if specified
     if agent_config and 'can_transfer_to' in agent_config:
         can_transfer_to = agent_config['can_transfer_to']

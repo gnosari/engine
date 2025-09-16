@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
@@ -27,33 +25,14 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
-  gnosari-chat:
-    build:
-      context: .
-      dockerfile: protected/gnosari_chat_demo/docker/Dockerfile
+  minio:
+    image: minio/minio
     ports:
-      - "8001:8000"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - COHERE_API_KEY=${COHERE_API_KEY}
-      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
-      - PYTHONPATH=/app
-      - ENVIRONMENT=development
-      - LOG_LEVEL=debug
+      - "9000:9000" # MinIO S3 API port
+      - "9001:9001" # MinIO Console port
     volumes:
-      - ./src/gnosari:/app/gnosari
-      - ./gnosari_chat_demo/frontend:/app/static
-      - ./gnosari_chat_demo/backend:/app
-      - ./examples:/app/examples
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - ./protected/minio_data:/data # Mount a named volume for persistent data storage
+    environment:
+      MINIO_ROOT_USER: user # Replace with your desired username
+      MINIO_ROOT_PASSWORD: password123 # Replace with your desired strong password
+    command: server --console-address ":9001" /data

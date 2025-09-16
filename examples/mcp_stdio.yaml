@@ -8,6 +8,7 @@ tools:
     connection_type: "stdio"
     command: "npx"
     args: ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+
   - name: "playwright"
     connection_type: "stdio"
     command: "npx"
