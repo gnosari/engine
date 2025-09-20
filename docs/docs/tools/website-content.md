@@ -32,7 +32,7 @@ The website content tool allows agents to:
 ```yaml
 tools:
   - name: website_content
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://r.ai.neomanex.com
@@ -48,7 +48,7 @@ The tool defaults to using `https://r.ai.neomanex.com` as the base URL for conte
 ```yaml
 tools:
   - name: content_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://api.content-service.com
@@ -62,14 +62,14 @@ tools:
 ```yaml
 tools:
   - name: news_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://news-api.example.com
       timeout: 30
 
   - name: blog_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://blog-api.example.com
@@ -106,7 +106,7 @@ name: News Monitoring Team
 
 tools:
   - name: news_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://news-api.example.com
@@ -137,7 +137,7 @@ name: Content Research Team
 
 tools:
   - name: research_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://research-api.example.com
@@ -148,7 +148,7 @@ agents:
     instructions: >
       Research topics and gather information from various sources. Use the research_fetcher tool to:
       - Get research papers: /papers/{topic}
-      - Fetch documentation: /docs/{section}
+      - Fetch documentation: /{section}
       - Retrieve case studies: /cases/{industry}
     model: gpt-4o
     tools:
@@ -172,7 +172,7 @@ name: Documentation Team
 
 tools:
   - name: docs_fetcher
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://docs-api.example.com
@@ -267,13 +267,13 @@ Set appropriate timeouts for different content types:
 ```yaml
 tools:
   - name: fast_content
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       timeout: 15  # For simple content
       
   - name: complex_content
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       timeout: 60  # For complex or large content
@@ -333,7 +333,7 @@ The website content tool provides comprehensive error handling:
 Use debug mode to see detailed content retrieval logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Content Retrieval Debugging
@@ -342,8 +342,8 @@ Debug mode shows detailed information about content retrieval requests, includin
 
 ## Related Tools
 
-- [API Request Tool](/docs/tools/api-request) - For general HTTP API integration
-- [Knowledge Query Tool](/docs/tools/knowledge-query) - For knowledge base queries
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
+- [API Request Tool](api-request) - For general HTTP API integration
+- [Knowledge Query Tool](knowledge-query) - For knowledge base queries
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
 
 The website content tool is useful for creating agents that need to retrieve and process web content. Use it to build agents that can fetch information from web APIs and provide content-based services to users.

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 2
 ---
 
 # Handoffs
@@ -294,7 +294,7 @@ agents:
 Use debug mode to see detailed handoff information:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Handoff Debugging
@@ -333,18 +333,18 @@ Be careful with long escalation chains that might confuse users.
 
 ## Related Topics
 
-- [Delegation](/docs/delegation) - Learn about task assignment and response handling
-- [Orchestration](/docs/orchestration) - Understand overall coordination patterns
-- [Agents](/docs/agents) - Learn about individual agent configuration
-- [Teams](/docs/teams) - Understand team structure and coordination
-- [Quickstart](/docs/quickstart) - Create your first team with handoffs
+- [Delegation](delegation) - Learn about task assignment and response handling
+- [Orchestration](orchestration) - Understand overall coordination patterns
+- [Agents](../agents) - Learn about individual agent configuration
+- [Teams](../teams) - Understand team structure and coordination
+- [Quickstart](../quickstart) - Create your first team with handoffs
 
 ## Next Steps
 
 Now that you understand handoffs, learn about the complementary mechanism:
 
-- [Delegation](/docs/delegation) - Task assignment with response handling
-- [Orchestration](/docs/orchestration) - Overall coordination strategies
-- [Agents](/docs/agents) - Configure agents for handoffs
-- [Teams](/docs/teams) - Set up teams with handoff capabilities
-- [Quickstart](/docs/quickstart) - Build your first team with handoffs
+- [Delegation](delegation) - Task assignment with response handling
+- [Orchestration](orchestration) - Overall coordination strategies
+- [Agents](../agents) - Configure agents for handoffs
+- [Teams](../teams) - Set up teams with handoff capabilities
+- [Quickstart](../quickstart) - Build your first team with handoffs

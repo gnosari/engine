@@ -1,0 +1,17 @@
+apiVersion: v2
+name: gnosari-docs
+description: A Helm chart for Gnosari AI Teams documentation built with Docusaurus
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - documentation
+  - docusaurus
+  - gnosari
+  - ai
+home: https://github.com/gnosari/engine
+sources:
+  - https://github.com/gnosari/engine
+maintainers:
+  - name: Gnosari Team
+    email: team@gnosari.com

@@ -28,3 +28,14 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Override hero text colors for light theme */
+.heroBanner h1,
+.heroBanner .hero__title {
+  color: #212529 !important;
+}
+
+.heroBanner p,
+.heroBanner .hero__subtitle {
+  color: #6c757d !important;
+}

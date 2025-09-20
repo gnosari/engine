@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 3
 ---
 
 # Delegation
@@ -21,35 +21,49 @@ Delegation assigns tasks and receives responses back, while handoffs transfer co
 
 ## Delegation Configuration
 
-Delegation is configured using the `delegate_agent` tool in agent configurations:
+Delegation is configured using the `delegation` field for any agent:
 
 ```yaml
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
 agents:
   - name: ProjectManager
     instructions: "Coordinate project tasks and delegate to specialists"
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent  # Required for delegation
+    delegation:
+      - agent: TechnicalWriter
+        instructions: "Use for creating technical documentation"
+      - agent: Designer
+        instructions: "Use for design and visual content creation"
 
   - name: TechnicalWriter
-    instructions: "Create technical documentation"
+    instructions: "Create technical documentation and delegate reviews"
     model: gpt-4o
+    delegation:
+      - agent: TechnicalReviewer
+        instructions: "Use for reviewing technical content"
 
   - name: Designer
     instructions: "Create designs and visual content"
     model: gpt-4o
+    delegation:
+      - agent: DesignReviewer
+        instructions: "Use for design review and feedback"
+
+  - name: TechnicalReviewer
+    instructions: "Review technical documentation for accuracy"
+    model: gpt-4o
+
+  - name: DesignReviewer
+    instructions: "Review designs for consistency and usability"
+    model: gpt-4o
 ```
 
-:::tip Delegation Requirements
-Only agents with `orchestrator: true` and the `delegate_agent` tool can delegate tasks to other agents.
+:::tip Delegation Configuration
+Delegation can be configured for any agent using the `delegation` field in the agent configuration.
+:::
+
+:::warning Circular Delegation
+Avoid circular delegation patterns where Agent A delegates to Agent B, and Agent B delegates back to Agent A. This can create infinite loops and cause the system to hang. Design clear delegation hierarchies with well-defined responsibilities.
 :::
 
 ## When to Use Delegation
@@ -65,19 +79,45 @@ agents:
       design tasks to Designer, and research tasks to Researcher.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: ContentWriter
+        instructions: "Use for writing engaging content"
+      - agent: Designer
+        instructions: "Use for visual designs and layouts"
+      - agent: Researcher
+        instructions: "Use for research and information gathering"
 
   - name: ContentWriter
-    instructions: "Write engaging content based on requirements"
+    instructions: "Write engaging content and delegate editing tasks"
     model: gpt-4o
+    delegation:
+      - agent: Editor
+        instructions: "Use for content editing and proofreading"
 
   - name: Designer
-    instructions: "Create visual designs and layouts"
+    instructions: "Create visual designs and delegate asset creation"
     model: gpt-4o
+    delegation:
+      - agent: AssetCreator
+        instructions: "Use for creating specific design assets"
 
   - name: Researcher
-    instructions: "Research topics and gather information"
+    instructions: "Research topics and delegate fact-checking"
+    model: gpt-4o
+    delegation:
+      - agent: FactChecker
+        instructions: "Use for verifying research accuracy"
+
+  - name: Editor
+    instructions: "Edit and proofread content for quality"
+    model: gpt-4o
+
+  - name: AssetCreator
+    instructions: "Create specific design assets and graphics"
+    model: gpt-4o
+
+  - name: FactChecker
+    instructions: "Verify accuracy of research information"
     model: gpt-4o
 ```
 
@@ -92,19 +132,63 @@ agents:
       business tasks to BusinessTeam, and quality tasks to QualityTeam.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: TechnicalTeam
+        instructions: "Use for technical implementation and development"
+      - agent: BusinessTeam
+        instructions: "Use for business requirements and stakeholder communication"
+      - agent: QualityTeam
+        instructions: "Use for quality assurance and testing"
 
   - name: TechnicalTeam
-    instructions: "Handle technical implementation and development"
+    instructions: "Handle technical implementation and delegate code reviews"
     model: gpt-4o
+    delegation:
+      - agent: CodeReviewer
+        instructions: "Use for code review and technical validation"
+      - agent: Architect
+        instructions: "Use for architectural decisions"
 
   - name: BusinessTeam
-    instructions: "Handle business requirements and stakeholder communication"
+    instructions: "Handle business requirements and delegate stakeholder tasks"
     model: gpt-4o
+    delegation:
+      - agent: StakeholderLiaison
+        instructions: "Use for stakeholder communication"
+      - agent: RequirementsAnalyst
+        instructions: "Use for requirements analysis"
 
   - name: QualityTeam
-    instructions: "Handle quality assurance and testing"
+    instructions: "Handle quality assurance and delegate testing tasks"
+    model: gpt-4o
+    delegation:
+      - agent: TestAutomation
+        instructions: "Use for automated testing"
+      - agent: ManualTester
+        instructions: "Use for manual testing and validation"
+
+  - name: CodeReviewer
+    instructions: "Review code for quality and best practices"
+    model: gpt-4o
+
+  - name: Architect
+    instructions: "Make architectural decisions and design systems"
+    model: gpt-4o
+
+  - name: StakeholderLiaison
+    instructions: "Communicate with stakeholders and gather feedback"
+    model: gpt-4o
+
+  - name: RequirementsAnalyst
+    instructions: "Analyze and document business requirements"
+    model: gpt-4o
+
+  - name: TestAutomation
+    instructions: "Create and run automated tests"
+    model: gpt-4o
+
+  - name: ManualTester
+    instructions: "Perform manual testing and validation"
     model: gpt-4o
 ```
 
@@ -119,19 +203,45 @@ agents:
       analysis to Analyst, and reporting to Reporter.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: Researcher
+        instructions: "Use for research and data gathering"
+      - agent: Analyst
+        instructions: "Use for data analysis and insights"
+      - agent: Reporter
+        instructions: "Use for creating reports and documentation"
 
   - name: Researcher
-    instructions: "Research topics and gather data"
+    instructions: "Research topics and delegate data validation"
     model: gpt-4o
+    delegation:
+      - agent: DataValidator
+        instructions: "Use for validating research data accuracy"
 
   - name: Analyst
-    instructions: "Analyze data and provide insights"
+    instructions: "Analyze data and delegate visualization tasks"
     model: gpt-4o
+    delegation:
+      - agent: DataVisualizer
+        instructions: "Use for creating charts and visualizations"
 
   - name: Reporter
-    instructions: "Create reports and documentation"
+    instructions: "Create reports and delegate formatting tasks"
+    model: gpt-4o
+    delegation:
+      - agent: ReportFormatter
+        instructions: "Use for formatting and styling reports"
+
+  - name: DataValidator
+    instructions: "Validate research data for accuracy and completeness"
+    model: gpt-4o
+
+  - name: DataVisualizer
+    instructions: "Create charts, graphs, and data visualizations"
+    model: gpt-4o
+
+  - name: ReportFormatter
+    instructions: "Format and style reports for professional presentation"
     model: gpt-4o
 ```
 
@@ -141,13 +251,6 @@ agents:
 
 ```yaml
 name: Content Creation Team
-
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
 
 agents:
   - name: ContentManager
@@ -161,8 +264,13 @@ agents:
       Always provide clear, specific tasks to delegated agents.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: Researcher
+        instructions: "Use for research and information gathering"
+      - agent: Writer
+        instructions: "Use for content writing"
+      - agent: Editor
+        instructions: "Use for content review and editing"
 
   - name: Researcher
     instructions: >
@@ -189,12 +297,6 @@ agents:
 name: Data Analysis Team
 
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
   - name: mysql_query
     module: gnosari.tools.mysql_query
     class: MySQLQueryTool
@@ -214,8 +316,13 @@ agents:
       4. Compile final analysis
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: DataCollector
+        instructions: "Use for data collection and preparation"
+      - agent: DataAnalyst
+        instructions: "Use for data analysis and insights"
+      - agent: ReportGenerator
+        instructions: "Use for creating reports and documentation"
 
   - name: DataCollector
     instructions: >
@@ -243,21 +350,13 @@ agents:
 ```yaml
 name: Customer Support Team
 
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
-  - name: knowledge_query
-    # Automatically added when knowledge bases are defined
-
 knowledge:
-  - name: "support_docs"
+  - id: "support_docs"
+    name: "Support Documentation"
     type: "website"
     data: ["https://support.company.com"]
-  - name: "faq"
+  - id: "faq"
+    name: "Frequently Asked Questions"
     type: "text"
     data: ["Q: How do I reset my password? A: Click forgot password..."]
 
@@ -272,9 +371,15 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
       - knowledge_query
     knowledge: ["support_docs", "faq"]
+    delegation:
+      - agent: TechnicalSupport
+        instructions: "Use for technical support issues"
+      - agent: BillingSupport
+        instructions: "Use for billing and account issues"
+      - agent: GeneralSupport
+        instructions: "Use for general customer questions"
 
   - name: TechnicalSupport
     instructions: >
@@ -318,10 +423,10 @@ agents:
       
       Example: "Research renewable energy trends for 2024 and provide
       a summary with key statistics and market insights."
-    orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: Researcher
+        instructions: "Use for research and data gathering tasks"
 ```
 
 ### 2. **Appropriate Agent Selection**
@@ -336,10 +441,16 @@ agents:
       - Creative tasks → CreativeSpecialist
       - Data analysis → DataAnalyst
       - Writing tasks → ContentWriter
-    orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: TechnicalExpert
+        instructions: "Use for technical questions and analysis"
+      - agent: CreativeSpecialist
+        instructions: "Use for creative and design tasks"
+      - agent: DataAnalyst
+        instructions: "Use for data analysis and insights"
+      - agent: ContentWriter
+        instructions: "Use for writing and content creation"
 ```
 
 ### 3. **Response Integration**
@@ -354,10 +465,10 @@ agents:
       - Integrate multiple responses coherently
       - Provide feedback if needed
       - Compile final deliverables
-    orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: TeamMember
+        instructions: "Use for specific project tasks"
 ```
 
 ### 4. **Error Handling**
@@ -372,10 +483,12 @@ agents:
       - Provide clearer instructions if needed
       - Escalate to handoffs if delegation isn't working
       - Always provide feedback to users about progress
-    orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: PrimaryAgent
+        instructions: "Use for primary task handling"
+      - agent: BackupAgent
+        instructions: "Use as fallback for task handling"
 ```
 
 ## Delegation Monitoring
@@ -384,7 +497,7 @@ agents:
 Use debug mode to see detailed delegation information:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Delegation Debugging
@@ -406,41 +519,38 @@ The system automatically logs delegation activities:
 
 ## Delegation Limitations
 
-### 1. **Orchestrator Requirement**
-Only agents with `orchestrator: true` can use the `delegate_agent` tool.
+### 1. **Configuration Dependency**
+Delegation requires proper `delegation` configuration in the agent setup.
 
-### 2. **Tool Dependency**
-Delegation requires the `delegate_agent` tool to be properly configured.
-
-### 3. **Response Handling**
+### 2. **Response Handling**
 Delegated agents must provide responses for the delegation to be successful.
 
-### 4. **Context Preservation**
+### 3. **Context Preservation**
 While context is maintained, complex multi-step delegations can become complex.
 
 :::warning Delegation Considerations
-- Delegation requires proper tool configuration
-- Only orchestrator agents can delegate tasks
+- Delegation requires proper configuration
 - Ensure delegated agents can handle the assigned tasks
 - Consider response quality and integration
+- Monitor delegation chains for complexity
 :::
 
 ## Related Topics
 
-- [Handoffs](/docs/handoffs) - Learn about control transfer mechanisms
-- [Orchestration](/docs/orchestration) - Understand overall coordination patterns
-- [Agents](/docs/agents) - Learn about individual agent configuration
-- [Teams](/docs/teams) - Understand team structure and coordination
-- [Tools](/docs/tools/delegate-agent) - Detailed delegate agent tool documentation
-- [Quickstart](/docs/quickstart) - Create your first team with delegation
+- [Handoffs](handoffs) - Learn about control transfer mechanisms
+- [Orchestration](orchestration) - Understand overall coordination patterns
+- [Agents](../agents) - Learn about individual agent configuration
+- [Teams](../teams) - Understand team structure and coordination
+- [Tools](../tools/delegate-agent) - Detailed delegate agent tool documentation
+- [Quickstart](../quickstart) - Create your first team with delegation
 
 ## Next Steps
 
 Now that you understand delegation, learn about the complementary mechanism:
 
-- [Handoffs](/docs/handoffs) - Control transfer without response handling
-- [Orchestration](/docs/orchestration) - Overall coordination strategies
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - Detailed tool documentation
-- [Agents](/docs/agents) - Configure orchestrator agents
-- [Teams](/docs/teams) - Set up teams with delegation capabilities
-- [Quickstart](/docs/quickstart) - Build your first team with delegation
+- [Handoffs](handoffs) - Control transfer without response handling
+- [Orchestration](orchestration) - Overall coordination strategies
+- [Delegate Agent Tool](../tools/delegate-agent) - Detailed tool documentation
+- [Agents](../agents) - Configure orchestrator agents
+- [Teams](../teams) - Set up teams with delegation capabilities
+- [Quickstart](../quickstart) - Build your first team with delegation

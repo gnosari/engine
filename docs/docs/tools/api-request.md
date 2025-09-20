@@ -33,7 +33,7 @@ The API request tool allows agents to:
 ```yaml
 tools:
   - name: api_request
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.example.com
@@ -50,7 +50,7 @@ Always enable `verify_ssl: true` in production environments to ensure secure con
 ```yaml
 tools:
   - name: external_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.external-service.com
@@ -68,7 +68,7 @@ tools:
 ```yaml
 tools:
   - name: github_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.github.com
@@ -79,7 +79,7 @@ tools:
       verify_ssl: true
 
   - name: slack_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://slack.com/api
@@ -120,7 +120,7 @@ name: GitHub Integration Team
 
 tools:
   - name: github_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.github.com
@@ -150,7 +150,7 @@ name: Slack Notification Team
 
 tools:
   - name: slack_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://slack.com/api
@@ -179,7 +179,7 @@ name: Custom API Team
 
 tools:
   - name: custom_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.custom-service.com
@@ -268,7 +268,7 @@ Store sensitive credentials in environment variables:
 ```yaml
 tools:
   - name: secure_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.secure-service.com
@@ -336,7 +336,7 @@ The API request tool provides comprehensive error handling:
 Use debug mode to see detailed API request logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip API Debugging
@@ -345,8 +345,8 @@ Debug mode shows detailed HTTP request/response information including headers, b
 
 ## Related Tools
 
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
-- [MySQL Query Tool](/docs/tools/mysql-query) - For database operations
-- [Website Content Tool](/docs/tools/website-content) - For web content retrieval
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
+- [MySQL Query Tool](mysql-query) - For database operations
+- [Website Content Tool](website-content) - For web content retrieval
 
 The API request tool is essential for integrating your AI agents with external services and APIs. Use it to create powerful integrations that extend your agents' capabilities beyond the local environment.

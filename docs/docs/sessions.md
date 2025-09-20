@@ -175,13 +175,13 @@ Use sessions by providing a `--session-id` parameter when running teams:
 
 ```bash
 # Start a new conversation
-poetry run gnosari --config "team.yaml" --message "Hello, my name is Alice" --session-id "user-123"
+gnosari --config "team.yaml" --message "Hello, my name is Alice" --session-id "user-123"
 
 # Continue the conversation (agent remembers Alice)
-poetry run gnosari --config "team.yaml" --message "What's my name?" --session-id "user-123"
+gnosari --config "team.yaml" --message "What's my name?" --session-id "user-123"
 
 # Different session (fresh context)
-poetry run gnosari --config "team.yaml" --message "What's my name?" --session-id "user-456"
+gnosari --config "team.yaml" --message "What's my name?" --session-id "user-456"
 ```
 
 ### Session Management
@@ -288,7 +288,7 @@ Enable debug logging to troubleshoot session issues:
 
 ```bash
 export LOG_LEVEL=DEBUG
-poetry run gnosari --config "team.yaml" --message "Test message" --session-id "debug-session" --debug
+gnosari --config "team.yaml" --message "Test message" --session-id "debug-session" --debug
 ```
 
 ## Examples
@@ -297,26 +297,26 @@ poetry run gnosari --config "team.yaml" --message "Test message" --session-id "d
 
 ```bash
 # User 1 conversation
-poetry run gnosari --config "support.yaml" --message "I need help with billing" --session-id "user-1001"
+gnosari --config "support.yaml" --message "I need help with billing" --session-id "user-1001"
 
 # User 2 conversation (separate context)
-poetry run gnosari --config "support.yaml" --message "I need help with billing" --session-id "user-1002"
+gnosari --config "support.yaml" --message "I need help with billing" --session-id "user-1002"
 
 # User 1 continues (remembers previous context)
-poetry run gnosari --config "support.yaml" --message "Can you check my account balance?" --session-id "user-1001"
+gnosari --config "support.yaml" --message "Can you check my account balance?" --session-id "user-1001"
 ```
 
 ### Project-Based Sessions
 
 ```bash
 # Project Alpha discussion
-poetry run gnosari --config "project-team.yaml" --message "Let's plan the architecture" --session-id "project-alpha"
+gnosari --config "project-team.yaml" --message "Let's plan the architecture" --session-id "project-alpha"
 
 # Project Beta discussion (different context)
-poetry run gnosari --config "project-team.yaml" --message "Let's plan the architecture" --session-id "project-beta"
+gnosari --config "project-team.yaml" --message "Let's plan the architecture" --session-id "project-beta"
 
 # Continue Project Alpha
-poetry run gnosari --config "project-team.yaml" --message "What were our main components?" --session-id "project-alpha"
+gnosari --config "project-team.yaml" --message "What were our main components?" --session-id "project-alpha"
 ```
 
 ### API-Based Sessions
@@ -329,10 +329,10 @@ export GNOSARI_API_KEY=your-api-key
 
 # Multiple engine instances can now share sessions
 # Instance 1
-poetry run gnosari --config "team.yaml" --message "Start working on feature X" --session-id "feature-x"
+gnosari --config "team.yaml" --message "Start working on feature X" --session-id "feature-x"
 
 # Instance 2 (different server, same session)
-poetry run gnosari --config "team.yaml" --message "What's the status?" --session-id "feature-x"
+gnosari --config "team.yaml" --message "What's the status?" --session-id "feature-x"
 ```
 
 ## Implementation Details

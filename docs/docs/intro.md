@@ -48,13 +48,13 @@ Ready to create your first AI team? Our comprehensive quickstart guide will have
 
 ## Next Steps
 
-- 🚀 [Quickstart Guide](/docs/quickstart) - Get up and running in minutes with your first team
-- 🤖 [Agents](/docs/agents) - Learn about agent configuration, instructions, and capabilities
-- 👥 [Teams](/docs/teams) - Understand team structure, coordination, and workflows
-- 🎭 [Orchestration](/docs/orchestration) - Learn about agent coordination and workflow management
-- 📚 [Knowledge Bases](/docs/knowledge) - Set up knowledge bases for RAG capabilities
-- 🛠️ [Tools Overview](/docs/tools/intro) - Learn about built-in tools and how to use them
-- 📝 [Examples](/docs/examples) - Explore real-world use cases
-- 🔧 [API Reference](/docs/api) - Detailed API documentation
+- 🚀 [Quickstart Guide](quickstart) - Get up and running in minutes with your first team
+- 🤖 [Agents](agents) - Learn about agent configuration, instructions, and capabilities
+- 👥 [Teams](teams) - Understand team structure, coordination, and workflows
+- 🎭 [Orchestration](coordination/orchestration) - Learn about agent coordination and workflow management
+- 📚 [Knowledge Bases](knowledge) - Set up knowledge bases for RAG capabilities
+- 🛠️ [Tools Overview](tools/intro) - Learn about built-in tools and how to use them
+- 📝 [Examples](examples) - Explore real-world use cases
+- 🔧 [API Reference](api) - Detailed API documentation
 
 Ready to build your first AI team? Let's get started!

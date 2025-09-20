@@ -61,14 +61,6 @@ Create a file called `my-first-team.yaml`:
 ```yaml
 name: My First Team
 
-# Define tools for the team
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
 # Define agents
 agents:
   - name: Coordinator
@@ -78,8 +70,6 @@ agents:
       Always provide a summary of the work completed.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
 
   - name: Writer
     instructions: >
@@ -98,9 +88,9 @@ agents:
 
 :::info Team Structure
 This team has:
-- **1 Orchestrator**: The Coordinator who manages tasks
+- **1 Orchestrator**: The Coordinator who receives initial user input (`orchestrator: true`)
 - **2 Specialists**: Writer and Researcher who handle specific tasks
-- **1 Tool**: delegate_agent for task delegation
+- **No Delegation**: Agents don't have delegation configured, so they work independently
 :::
 
 ### 2. Run Your Team
@@ -108,24 +98,26 @@ This team has:
 Now let's run the team with a message:
 
 ```bash
-poetry run gnosari --config "my-first-team.yaml" --message "Write a blog post about the benefits of renewable energy"
+gnosari --config "my-first-team.yaml" --message "Write a blog post about the benefits of renewable energy"
 ```
 
 You can also run a specific agent from the team:
 
 ```bash
-poetry run gnosari --config "my-first-team.yaml" --message "Research renewable energy trends" --agent "Researcher"
+gnosari --config "my-first-team.yaml" --message "Research renewable energy trends" --agent "Researcher"
 ```
 
 :::tip CLI Command Structure
 The basic command structure is:
 ```bash
 # Run entire team
-poetry run gnosari --config "team.yaml" --message "your message"
+gnosari --config "team.yaml" --message "your message"
 
 # Run specific agent
-poetry run gnosari --config "team.yaml" --message "your message" --agent "AgentName"
+gnosari --config "team.yaml" --message "your message" --agent "AgentName"
 ```
+
+**Team Execution**: When running the entire team, the agent with `orchestrator: true` will receive the request. If no agent has `orchestrator: true`, the first agent in the team configuration will receive the request.
 :::
 
 ### 3. Watch the Magic Happen
@@ -137,15 +129,12 @@ You'll see output like this:
 📋 Team: My First Team
 🎯 Message: Write a blog post about the benefits of renewable energy
 
-[Coordinator] Analyzing the request and delegating to specialists...
+[Coordinator] Analyzing the request and handling the writing task...
 
-[Coordinator] Delegating research task to Researcher...
-[Researcher] Gathering comprehensive information about renewable energy benefits...
-
-[Coordinator] Delegating writing task to Writer...
-[Writer] Creating engaging blog post content...
-
-[Coordinator] Compiling final blog post with research insights...
+[Coordinator] Creating a comprehensive blog post about renewable energy benefits...
+[Coordinator] Researching renewable energy trends and statistics...
+[Coordinator] Structuring the content with engaging sections...
+[Coordinator] Finalizing the blog post with clear conclusions...
 ```
 
 ## Advanced Team Configuration
@@ -161,20 +150,15 @@ name: Advanced Content Team
 
 # Knowledge bases (automatically adds knowledge_query tool)
 knowledge:
-  - name: "company_docs"
+  - id: "company_docs"
+    name: "Company Documentation"
     type: "website"
     data: ["https://docs.yourcompany.com"]
 
 # Tools configuration
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
   - name: api_request
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.example.com
@@ -185,7 +169,7 @@ tools:
       verify_ssl: true
 
   - name: mysql_query
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: ${DB_HOST}
@@ -195,6 +179,13 @@ tools:
       password: ${DB_PASSWORD}
       pool_size: 5
       query_timeout: 30
+
+  - name: file_ops
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".py"]
 
 # Agents configuration
 agents:
@@ -206,8 +197,8 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
       - knowledge_query
+      - file_ops
     knowledge: ["company_docs"]
 
   - name: Data Analyst
@@ -223,27 +214,29 @@ agents:
   - name: Content Writer
     instructions: >
       You are a professional content writer who creates engaging, well-researched content.
-      Use the knowledge_query tool to access company documentation and ensure accuracy.
+      Use the knowledge_query tool to access company documentation and file_ops to manage drafts.
       Focus on creating content that resonates with the target audience.
     model: gpt-4o
     tools:
       - knowledge_query
+      - file_ops
     knowledge: ["company_docs"]
 
   - name: Research Specialist
     instructions: >
       You are a research specialist who gathers and analyzes information from multiple sources.
-      Use the api_request tool to fetch data from external APIs and services.
+      Use the api_request tool to fetch data from external APIs and file_ops to save research.
       Always verify information and provide comprehensive analysis.
     model: gpt-4o
     tools:
       - api_request
+      - file_ops
 ```
 
 :::info Advanced Features
 This team includes:
 - **Knowledge Base**: Company documentation for context
-- **Multiple Tools**: Database queries, API requests, knowledge queries
+- **Multiple Tools**: Database queries, API requests, file operations, knowledge queries
 - **Specialized Agents**: Each with specific tools and capabilities
 - **Environment Variables**: Secure credential management
 :::
@@ -253,7 +246,7 @@ This team includes:
 Use the `--stream` flag to see real-time output:
 
 ```bash
-poetry run gnosari --config "advanced-team.yaml" --message "Create a market analysis report for Q4" --stream
+gnosari --config "advanced-team.yaml" --message "Create a market analysis report for Q4" --stream
 ```
 
 :::tip Streaming Output
@@ -265,7 +258,7 @@ The `--stream` flag shows real-time agent activity, making it easier to follow t
 Use `--debug` to see detailed logs:
 
 ```bash
-poetry run gnosari --config "advanced-team.yaml" --message "Create a market analysis report for Q4" --debug
+gnosari --config "advanced-team.yaml" --message "Create a market analysis report for Q4" --debug
 ```
 
 :::tip Debug Mode
@@ -280,26 +273,26 @@ The Gnosari CLI supports various options for different use cases:
 
 ```bash
 # Basic team execution
-poetry run gnosari --config "team.yaml" --message "Your message"
+gnosari --config "team.yaml" --message "Your message"
 
 # Run specific agent from team
-poetry run gnosari --config "team.yaml" --message "Your message" --agent "AgentName"
+gnosari --config "team.yaml" --message "Your message" --agent "AgentName"
 
 # With streaming output
-poetry run gnosari --config "team.yaml" --message "Your message" --stream
+gnosari --config "team.yaml" --message "Your message" --stream
 
 # With debug mode
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 
 # With custom model and temperature
-poetry run gnosari --config "team.yaml" --message "Your message" --model "gpt-4o" --temperature 0.7
+gnosari --config "team.yaml" --message "Your message" --model "gpt-4o" --temperature 0.7
 ```
 
 ### Advanced Options
 
 ```bash
 # All options combined
-poetry run gnosari \
+gnosari \
   --config "team.yaml" \
   --message "Your message" \
   --stream \
@@ -316,6 +309,55 @@ poetry run gnosari \
 - `--debug`: Enable debug mode with detailed logs
 - `--model`: Override the model for all agents
 - `--temperature`: Override the temperature for all agents
+:::
+
+## Agent Coordination
+
+### Understanding Orchestrator vs Delegation
+
+**Orchestrator (`orchestrator: true`)**:
+- Determines which agent receives the initial user input
+- Only one agent per team can be the orchestrator
+- Does NOT automatically enable delegation capabilities
+
+**Delegation (`delegation` property)**:
+- Enables agents to delegate tasks to other agents
+- Works the same way for ALL agents (orchestrator or not)
+- Must be explicitly configured with delegation targets
+
+### Configuring Delegation
+
+To enable delegation, add a `delegation` property to any agent:
+
+```yaml
+agents:
+  - name: ProjectManager
+    instructions: >
+      You are a project manager who coordinates team workflows.
+      Analyze incoming requests and delegate specific tasks to appropriate team members.
+      Always provide a summary when all work is completed.
+    orchestrator: true  # Receives initial user input
+    delegation:        # Enables delegation capabilities
+      - agent: "Developer"
+        instructions: "Handle development and coding tasks"
+      - agent: "Tester"
+        instructions: "Handle testing and quality assurance tasks"
+    model: gpt-4o
+    
+  - name: Developer
+    instructions: "Handle development and coding tasks"
+    model: gpt-4o
+    
+  - name: Tester
+    instructions: "Handle testing and quality assurance tasks"
+    model: gpt-4o
+```
+
+:::tip Delegation Best Practices
+- Configure delegation explicitly with the `delegation` property
+- Give specialists focused, specific roles
+- Avoid circular delegation references
+- Design clear delegation hierarchies
 :::
 
 ## Environment Variables
@@ -354,11 +396,12 @@ API_TOKEN=your-api-token
 ```yaml
 name: Simple Team
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
+  - name: api_request
+    module: gnosari.tools.builtin.api_request
+    class: APIRequestTool
     args:
-      pass
+      base_url: https://api.example.com
+      timeout: 30
 
 agents:
   - name: Manager
@@ -366,11 +409,13 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
+      - api_request
 
   - name: Specialist
     instructions: "Handle specific tasks assigned by the manager"
     model: gpt-4o
+    tools:
+      - api_request
 ```
 
 ### 2. Research and Writing Team
@@ -378,16 +423,17 @@ agents:
 ```yaml
 name: Research Team
 knowledge:
-  - name: "research_docs"
+  - id: "research_docs"
+    name: "Research Documentation"
     type: "website"
     data: ["https://research.example.com"]
 
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
+  - name: website_content
+    module: gnosari.tools.builtin.website_content
+    class: WebsiteContentTool
     args:
-      pass
+      timeout: 30
 
 agents:
   - name: Research Coordinator
@@ -395,20 +441,24 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
       - knowledge_query
+      - website_content
     knowledge: ["research_docs"]
 
   - name: Researcher
-    instructions: "Research topics using knowledge bases"
+    instructions: "Research topics using knowledge bases and web content"
     model: gpt-4o
     tools:
       - knowledge_query
+      - website_content
     knowledge: ["research_docs"]
 
   - name: Writer
     instructions: "Write content based on research"
     model: gpt-4o
+    tools:
+      - knowledge_query
+    knowledge: ["research_docs"]
 ```
 
 ### 3. Data Analysis Team
@@ -416,14 +466,8 @@ agents:
 ```yaml
 name: Data Team
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
-
   - name: mysql_query
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: ${DB_HOST}
@@ -431,19 +475,28 @@ tools:
       username: ${DB_USER}
       password: ${DB_PASSWORD}
 
+  - name: file_ops
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./reports"
+      allowed_extensions: [".csv", ".json", ".txt"]
+
 agents:
   - name: Data Manager
-    instructions: "Coordinate data analysis tasks"
+    instructions: "Coordinate data analysis tasks and save reports"
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
+      - mysql_query
+      - file_ops
 
   - name: Data Analyst
-    instructions: "Analyze data using SQL queries"
+    instructions: "Analyze data using SQL queries and save results"
     model: gpt-4o
     tools:
       - mysql_query
+      - file_ops
 ```
 
 ## Troubleshooting
@@ -471,7 +524,7 @@ agents:
 3. **Configuration Errors**
    ```bash
    # Validate YAML syntax
-   poetry run gnosari --config "team.yaml" --message "test" --debug
+   gnosari --config "team.yaml" --message "test" --debug
    ```
 
 :::tip Troubleshooting Steps
@@ -486,13 +539,13 @@ agents:
 
 Now that you've created your first team, explore more advanced features:
 
-- 🤖 [Agents](/docs/agents) - Learn about agent configuration and instructions
-- 👥 [Teams](/docs/teams) - Understand team structure and coordination patterns
-- 🎭 [Orchestration](/docs/orchestration) - Learn about agent coordination and workflow management
-- 📚 [Knowledge Bases](/docs/knowledge) - Set up knowledge bases for RAG capabilities
-- 🛠️ [Tools Overview](/docs/tools/intro) - Learn about all available tools
-- 📝 [Examples](/docs/examples) - Real-world use cases
-- 🔧 [API Reference](/docs/api) - Complete API documentation
+- 🤖 [Agents](agents) - Learn about agent configuration and instructions
+- 👥 [Teams](teams) - Understand team structure and coordination patterns
+- 🎭 [Orchestration](coordination/orchestration) - Learn about agent coordination and workflow management
+- 📚 [Knowledge Bases](knowledge) - Set up knowledge bases for RAG capabilities
+- 🛠️ [Tools Overview](tools/intro) - Learn about all available tools
+- 📝 [Examples](examples) - Real-world use cases
+- 🔧 [API Reference](api) - Complete API documentation
 
 :::tip Ready to Build
 You're now ready to create sophisticated multi-agent teams! Start with simple configurations and gradually add more tools and capabilities as you become familiar with the framework.

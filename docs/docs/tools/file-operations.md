@@ -35,7 +35,7 @@ The file operations tool allows agents to:
 ```yaml
 tools:
   - name: file_operations
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./workspace"
@@ -47,7 +47,7 @@ tools:
 ```yaml
 tools:
   - name: secure_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./secure_workspace"
@@ -62,7 +62,7 @@ tools:
 ```yaml
 tools:
   - name: docs_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./documents"
@@ -70,7 +70,7 @@ tools:
       max_file_size: 2097152  # 2MB
 
   - name: code_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./code"
@@ -109,7 +109,7 @@ name: Document Management Team
 
 tools:
   - name: doc_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./documents"
@@ -145,7 +145,7 @@ name: Code Management Team
 
 tools:
   - name: code_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./code"
@@ -181,7 +181,7 @@ name: Data Processing Team
 
 tools:
   - name: data_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./data"
@@ -307,7 +307,7 @@ All file operations are restricted to the configured base directory:
 ```yaml
 tools:
   - name: secure_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./secure_workspace"  # All operations limited to this directory
@@ -323,7 +323,7 @@ Restrict file operations to specific file types:
 ```yaml
 tools:
   - name: text_only_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       allowed_extensions: [".txt", ".md", ".json"]  # Only these file types allowed
@@ -335,7 +335,7 @@ Prevent large file operations:
 ```yaml
 tools:
   - name: small_file_ops
-    module: gnosari.tools.file_operations
+    module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       max_file_size: 1048576  # 1MB limit
@@ -468,7 +468,7 @@ The file operations tool provides comprehensive error handling:
 Use debug mode to see detailed file operation logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip File Operations Debugging
@@ -477,9 +477,9 @@ Debug mode shows detailed information about file operations, including path vali
 
 ## Related Tools
 
-- [API Request Tool](/docs/tools/api-request) - For external file operations
-- [MySQL Query Tool](/docs/tools/mysql-query) - For database file operations
-- [Website Content Tool](/docs/tools/website-content) - For web content retrieval
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
+- [API Request Tool](api-request) - For external file operations
+- [MySQL Query Tool](mysql-query) - For database file operations
+- [Website Content Tool](website-content) - For web content retrieval
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
 
 The file operations tool is essential for creating agents that can manage local files safely and efficiently. Use it to build agents that can read, write, and organize files within a secure, sandboxed environment.

@@ -28,7 +28,8 @@ name: Knowledge Team
 
 # Knowledge bases configuration
 knowledge:
-  - name: "knowledge_base_name"
+  - id: "knowledge_base_id"  # Unique identifier for referencing
+    name: "knowledge_base_name"
     type: "data_source_type"
     data: ["source1", "source2", "source3"]
 
@@ -39,7 +40,7 @@ agents:
     model: gpt-4o
     tools:
       - knowledge_query  # Automatically available
-    knowledge: ["knowledge_base_name"]  # Assign knowledge bases to agents
+    knowledge: ["knowledge_base_id"]  # Assign knowledge bases to agents by ID
 ```
 
 ## Supported Data Sources
@@ -236,7 +237,7 @@ knowledge:
     data: ["Q: How do I reset my password? A: Click forgot password..."]
   - name: "troubleshooting"
     type: "pdf"
-    data: ["/docs/troubleshooting-guide.pdf"]
+    data: ["/troubleshooting-guide.pdf"]
 
 agents:
   - name: SupportAgent
@@ -278,7 +279,7 @@ name: Content Creation Team
 knowledge:
   - name: "brand_guidelines"
     type: "pdf"
-    data: ["/docs/brand-guidelines.pdf"]
+    data: ["/brand-guidelines.pdf"]
   - name: "content_standards"
     type: "text"
     data: ["Content should be clear, engaging, and follow our style guide..."]
@@ -377,7 +378,7 @@ Large knowledge bases may take longer to build and query. Consider breaking very
 Use debug mode to see detailed knowledge query information:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Knowledge Query Debugging
@@ -424,17 +425,17 @@ agents:
 
 ## Related Topics
 
-- [Agents](/docs/agents) - Learn how to configure agents with knowledge access
-- [Teams](/docs/teams) - Understand team structure and knowledge sharing
-- [Orchestration](/docs/orchestration) - Learn about agent coordination with knowledge
-- [Tools](/docs/tools/knowledge-query) - Detailed knowledge query tool documentation
-- [Quickstart](/docs/quickstart) - Create your first team with knowledge bases
+- [Agents](agents) - Learn how to configure agents with knowledge access
+- [Teams](teams) - Understand team structure and knowledge sharing
+- [Orchestration](coordination/orchestration) - Learn about agent coordination with knowledge
+- [Tools](tools/knowledge-query) - Detailed knowledge query tool documentation
+- [Quickstart](quickstart) - Create your first team with knowledge bases
 
 ## Next Steps
 
 Now that you understand knowledge bases, learn how to:
-- [Configure agents](/docs/agents) to use knowledge bases effectively
-- [Set up teams](/docs/teams) with knowledge sharing capabilities
-- [Use orchestration](/docs/orchestration) to coordinate knowledge-based workflows
-- [Use the knowledge query tool](/docs/tools/knowledge-query) for detailed information
-- [Create your first team](/docs/quickstart) with knowledge integration
+- [Configure agents](agents) to use knowledge bases effectively
+- [Set up teams](teams) with knowledge sharing capabilities
+- [Use orchestration](coordination/orchestration) to coordinate knowledge-based workflows
+- [Use the knowledge query tool](tools/knowledge-query) for detailed information
+- [Create your first team](quickstart) with knowledge integration

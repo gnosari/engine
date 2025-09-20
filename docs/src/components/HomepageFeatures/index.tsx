@@ -11,32 +11,32 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Multi-Agent Orchestration',
     Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Orchestrate intelligent AI agent teams that collaborate through streaming delegation
+        and dynamic tool discovery. Each agent can use different LLM models and providers.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Streaming & Real-time',
     Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Experience real-time agent interactions with streaming responses and live delegation.
+        Watch your AI teams work together in real-time with full transparency.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Dynamic Tool Discovery',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Agents automatically discover and use tools through MCP (Model Context Protocol) servers.
+        Built-in tools for delegation, API requests, and knowledge base queries.
       </>
     ),
   },

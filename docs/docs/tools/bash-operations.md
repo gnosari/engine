@@ -35,7 +35,7 @@ The bash operations tool allows agents to:
 ```yaml
 tools:
   - name: bash_operations
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./workspace"
@@ -47,7 +47,7 @@ tools:
 ```yaml
 tools:
   - name: secure_bash_ops
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./secure_workspace"
@@ -63,7 +63,7 @@ tools:
 ```yaml
 tools:
   - name: dev_bash_ops
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./project"
@@ -77,7 +77,7 @@ tools:
 ```yaml
 tools:
   - name: unrestricted_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "/tmp/unsafe_workspace"  # Can use absolute paths in unsafe mode
@@ -129,7 +129,7 @@ name: Git Operations Team
 
 tools:
   - name: git_bash_ops
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./repository"
@@ -168,7 +168,7 @@ name: Node.js Development Team
 
 tools:
   - name: node_bash_ops
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./nodejs-project"
@@ -208,7 +208,7 @@ name: Python Development Team
 
 tools:
   - name: python_bash_ops
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./python-project"
@@ -248,7 +248,7 @@ name: System Administration Team
 
 tools:
   - name: unrestricted_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "/"  # Root directory access
@@ -367,7 +367,7 @@ instructions: >
   - command: "npm run build"
   - command: "pytest tests/"
   - command: "npm test"
-  - command: "poetry run pytest"
+  - command: "pytest"
 ```
 
 
@@ -379,7 +379,7 @@ The tool validates all commands for security:
 ```yaml
 tools:
   - name: secure_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       allowed_commands: ["git", "npm", "python"]  # Only these commands allowed
@@ -396,7 +396,7 @@ All commands execute within the configured base directory:
 ```yaml
 tools:
   - name: sandboxed_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       base_directory: "./secure_workspace"  # Commands limited to this directory
@@ -420,7 +420,7 @@ Prevent excessive memory usage:
 ```yaml
 tools:
   - name: limited_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       max_output_size: 512000  # 512KB limit
@@ -432,7 +432,7 @@ Completely disable all security mechanisms:
 ```yaml
 tools:
   - name: dangerous_bash
-    module: gnosari.tools.bash_operations
+    module: gnosari.tools.builtin.bash_operations
     class: BashOperationsTool
     args:
       unsafe_mode: true  # REMOVES ALL SAFETY MECHANISMS
@@ -586,7 +586,7 @@ The bash operations tool provides comprehensive error handling:
 Use debug mode to see detailed command execution logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Bash Operations Debugging
@@ -595,9 +595,9 @@ Debug mode shows detailed information about command execution, including validat
 
 ## Related Tools
 
-- [File Operations Tool](/docs/tools/file-operations) - For file system operations
-- [API Request Tool](/docs/tools/api-request) - For external API interactions
-- [MySQL Query Tool](/docs/tools/mysql-query) - For database operations
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
+- [File Operations Tool](file-operations) - For file system operations
+- [API Request Tool](api-request) - For external API interactions
+- [MySQL Query Tool](mysql-query) - For database operations
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
 
 The bash operations tool is essential for creating agents that can interact with the operating system safely and efficiently. Use it to build agents that can execute development workflows, manage repositories, run builds, and perform system administration tasks within a secure environment.

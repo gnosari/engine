@@ -30,9 +30,13 @@ agents:
     instructions: "What this agent does and how it behaves"
     model: gpt-4o
     orchestrator: true  # Optional: for coordination agents
-    tools: ["tool1", "tool2"]  # Optional: tools this agent can use
-    knowledge: ["kb1", "kb2"]  # Optional: knowledge bases this agent can access
+    tools: ["tool_id1", "tool_id2"]  # Optional: tools this agent can use (references tool IDs)
+    knowledge: ["kb_id1", "kb_id2"]  # Optional: knowledge bases this agent can access (references knowledge base IDs)
 ```
+
+:::info Environment Variables
+Agent configurations support environment variable substitution using `${VAR_NAME}` or `${VAR_NAME:default_value}` syntax. This works for all agent properties including names, instructions, models, and more. See [Environment Variables](#environment-variables) section below.
+:::
 
 ## Core Agent Properties
 
@@ -118,8 +122,6 @@ agents:
     instructions: "Coordinate team tasks and delegate work"
     orchestrator: true  # This agent can delegate to others
     model: gpt-4o
-    tools:
-      - delegate_agent  # Required for delegation
     
   - name: Specialist
     instructions: "Handle specific tasks"
@@ -127,9 +129,10 @@ agents:
     # No orchestrator: true - this agent cannot delegate
 ```
 
-:::warning Orchestrator Requirements
-Only agents with `orchestrator: true` can use the `delegate_agent` tool to coordinate with other agents.
+:::info Orchestrator as Entry Point
+When running a team without specifying a particular agent, **orchestrator agents are the first to receive user requests**. If your team has multiple orchestrator agents, the first one defined in the configuration will handle the initial user input.
 :::
+
 
 ## Agent Types and Patterns
 
@@ -146,8 +149,6 @@ agents:
       completed work.
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
 ```
 
 ### 2. Specialist Agents
@@ -240,7 +241,7 @@ instructions: >
 
 ### Internal Communication
 Agents communicate through:
-- **Task delegation** via the `delegate_agent` tool
+- **Task delegation** via delegation configuration (see [Delegation](coordination/delegation))
 - **Shared context** through conversation history
 - **Knowledge bases** for information sharing
 
@@ -311,8 +312,6 @@ agents:
   - name: Coordinator
     instructions: "Break down tasks and delegate to specialists"
     orchestrator: true
-    tools:
-      - delegate_agent
       
   - name: TechnicalSpecialist
     instructions: "Handle technical tasks and analysis"
@@ -358,23 +357,142 @@ Agents can only access knowledge bases that are:
 Be aware of model limitations, tool availability, and knowledge base access when designing your agents.
 :::
 
+## Environment Variables
+
+Agent configurations support environment variable substitution throughout all agent properties using `${VAR_NAME}` or `${VAR_NAME:default_value}` syntax.
+
+### Dynamic Agent Configuration
+
+```yaml
+agents:
+  - name: "${AGENT_NAME:DataAnalyst}"
+    instructions: >
+      You are a ${ROLE:data analyst} working for ${COMPANY:our company}.
+      
+      Your responsibilities include:
+      - ${RESPONSIBILITY_1:Analyzing business data}
+      - ${RESPONSIBILITY_2:Creating reports and insights}
+      - ${RESPONSIBILITY_3:Supporting data-driven decisions}
+      
+      Use ${ANALYSIS_STYLE:statistical methods} and always ${QUALITY_STANDARD:double-check your work}.
+    model: "${AGENT_MODEL:gpt-4o}"
+    temperature: ${AGENT_TEMPERATURE:0.3}
+    tools: ["${PRIMARY_TOOL:mysql_query}", "${SECONDARY_TOOL:api_request}"]
+```
+
+### Environment-Specific Agent Behavior
+
+```yaml
+agents:
+  - name: "${ENV}_Support_Agent"
+    instructions: >
+      You are a customer support agent for the ${ENV:production} environment.
+      
+      Environment-specific guidelines:
+      - Database: ${DB_NAME:prod_db}
+      - Support level: ${SUPPORT_LEVEL:L1}
+      - Escalation contact: ${ESCALATION_EMAIL:support@company.com}
+      - Debug mode: ${DEBUG_MODE:false}
+      
+      ${ENV_SPECIFIC_INSTRUCTIONS:Follow standard production protocols.}
+    model: "${ENV_MODEL:gpt-4o}"
+    temperature: ${ENV_TEMPERATURE:0.2}
+```
+
+### Multi-Environment Agent Setup
+
+```yaml
+agents:
+  - name: "${ROLE_PREFIX:Production}_Manager"
+    instructions: >
+      You are a ${ROLE_TYPE:production} manager responsible for ${DOMAIN:system operations}.
+      
+      Configuration:
+      - Environment: ${ENVIRONMENT:production}
+      - Region: ${REGION:us-east-1}
+      - Alert threshold: ${ALERT_THRESHOLD:95%}
+      - On-call contact: ${ONCALL_CONTACT:ops@company.com}
+    model: "${MANAGER_MODEL:gpt-4o}"
+    orchestrator: ${IS_ORCHESTRATOR:true}
+    tools: ["${MONITORING_TOOL:api_request}"]
+```
+
+### Setting Environment Variables for Agents
+
+Set environment variables to customize agent behavior:
+
+```bash
+# Agent configuration
+export AGENT_NAME="ProductionAnalyst"
+export ROLE="senior data analyst"
+export COMPANY="Acme Corporation"
+export AGENT_MODEL="gpt-4o"
+export AGENT_TEMPERATURE="0.2"
+
+# Environment-specific settings
+export ENV="production"
+export DB_NAME="acme_prod"
+export SUPPORT_LEVEL="L2"
+export DEBUG_MODE="false"
+
+# Role-specific settings
+export ROLE_PREFIX="Senior"
+export ROLE_TYPE="production"
+export DOMAIN="data analytics"
+export ENVIRONMENT="production"
+export REGION="us-west-2"
+```
+
+### Agent Instructions with Dynamic Content
+
+Environment variables are particularly useful for agent instructions:
+
+```yaml
+agents:
+  - name: CustomSupport
+    instructions: >
+      You are a customer support representative for ${COMPANY_NAME}.
+      
+      Company Information:
+      - Website: ${COMPANY_WEBSITE:https://company.com}
+      - Support email: ${SUPPORT_EMAIL:support@company.com}
+      - Phone: ${SUPPORT_PHONE:1-800-SUPPORT}
+      - Hours: ${SUPPORT_HOURS:9 AM - 6 PM EST, Monday-Friday}
+      
+      Product Information:
+      - Main product: ${PRODUCT_NAME:Our Product}
+      - Version: ${PRODUCT_VERSION:2.0}
+      - Documentation: ${DOCS_URL:https://docs.company.com}
+      
+      Policies:
+      - Refund period: ${REFUND_PERIOD:30 days}
+      - Escalation process: ${ESCALATION_PROCESS:Contact supervisor after 3 attempts}
+      
+      Always maintain a ${COMMUNICATION_TONE:professional and empathetic} tone.
+      ${ADDITIONAL_GUIDELINES:Follow company guidelines at all times.}
+```
+
+:::tip Agent Customization
+Use environment variables to create reusable agent configurations that can be customized for different environments, companies, or use cases without modifying the YAML files.
+:::
+
 ## Related Topics
 
-- [Teams](/docs/teams) - Learn how to configure and structure teams
-- [Orchestration](/docs/orchestration) - Understand agent coordination and workflow management
-- [Handoffs](/docs/handoffs) - Learn about control transfer mechanisms
-- [Delegation](/docs/delegation) - Understand task assignment and response handling
-- [Tools](/docs/tools/intro) - Explore available tools for agents
-- [Knowledge](/docs/knowledge) - Understand knowledge base integration
-- [Quickstart](/docs/quickstart) - Get started with your first team
+- [Teams](teams) - Learn how to configure and structure teams
+- [Orchestration](coordination/orchestration) - Understand agent coordination and workflow management
+- [Handoffs](coordination/handoffs) - Learn about control transfer mechanisms
+- [Delegation](coordination/delegation) - Understand task assignment and response handling with delegation configuration
+- [Tools](tools/intro) - Explore available tools for agents
+- [Knowledge](knowledge) - Understand knowledge base integration
+- [Quickstart](quickstart) - Get started with your first team
 
 ## Next Steps
 
 Now that you understand agents, learn how to:
-- [Configure teams](/docs/teams) with multiple agents
-- [Set up orchestration](/docs/orchestration) for agent coordination
-- [Use handoffs](/docs/handoffs) for control transfer
-- [Implement delegation](/docs/delegation) for task assignment
-- [Add tools](/docs/tools/intro) to enhance agent capabilities
-- [Set up knowledge bases](/docs/knowledge) for information access
-- [Create your first team](/docs/quickstart) with the quickstart guide
+- [Configure teams](teams) with multiple agents
+- [Set up orchestration](coordination/orchestration) for agent coordination
+- [Use handoffs](coordination/handoffs) for control transfer
+- [Implement delegation](coordination/delegation) for task assignment
+- [Add tools](tools/intro) to enhance agent capabilities
+- [Set up knowledge bases](knowledge) for information access
+- [Create your first team](quickstart) with the quickstart guide

@@ -34,7 +34,7 @@ The MySQL query tool allows agents to:
 ```yaml
 tools:
   - name: mysql_query
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: localhost
@@ -53,7 +53,7 @@ Never hardcode database passwords in your YAML files. Use environment variables 
 ```yaml
 tools:
   - name: production_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: db.example.com
@@ -75,7 +75,7 @@ tools:
 ```yaml
 tools:
   - name: user_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: user-db.example.com
@@ -87,7 +87,7 @@ tools:
       query_timeout: 30
 
   - name: analytics_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: analytics-db.example.com
@@ -129,7 +129,7 @@ name: Customer Analytics Team
 
 tools:
   - name: customer_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: customer-db.example.com
@@ -165,7 +165,7 @@ name: E-commerce Operations Team
 
 tools:
   - name: ecommerce_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: ecommerce-db.example.com
@@ -205,7 +205,7 @@ name: User Management Team
 
 tools:
   - name: user_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: user-db.example.com
@@ -308,7 +308,7 @@ Store database credentials in environment variables:
 ```yaml
 tools:
   - name: secure_db
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: ${DB_HOST}
@@ -380,7 +380,7 @@ The MySQL query tool provides comprehensive error handling:
 Use debug mode to see detailed database query logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Database Debugging
@@ -389,8 +389,8 @@ Debug mode shows detailed SQL query execution information, including connection 
 
 ## Related Tools
 
-- [API Request Tool](/docs/tools/api-request) - For external service integration
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
-- [Knowledge Query Tool](/docs/tools/knowledge-query) - For information retrieval
+- [API Request Tool](api-request) - For external service integration
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
+- [Knowledge Query Tool](knowledge-query) - For information retrieval
 
 The MySQL query tool is essential for creating data-driven AI agents that can interact with databases. Use it to build agents that can analyze data, generate reports, and perform database operations efficiently and securely.

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 6
+sidebar_position: 1
 ---
 
 # Orchestration
@@ -45,9 +45,12 @@ agents:
     instructions: "Coordinate all project activities and delegate tasks"
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
     can_transfer_to: ["TechnicalLead", "Designer"]  # Handoff targets
+    delegation:
+      - agent: TechnicalLead
+        instructions: "Use for technical decisions and implementation"
+      - agent: Designer
+        instructions: "Use for design and user experience tasks"
 
   - name: TechnicalLead
     instructions: "Handle technical decisions and implementation"
@@ -87,9 +90,10 @@ agents:
     instructions: "Coordinate main workflow and delegate tasks"
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
     can_transfer_to: ["EmergencyHandler"]  # Emergency handoff
+    delegation:
+      - agent: TaskSpecialist
+        instructions: "Use for specialized task handling"
 
   - name: TaskSpecialist
     instructions: "Handle specialized tasks"
@@ -107,7 +111,7 @@ Orchestrator agents are special agents that coordinate team activities:
 
 ### Orchestrator Characteristics
 - **`orchestrator: true`** in configuration
-- **Access to `delegate_agent` tool** for task delegation
+- **Delegation capabilities** for task assignment
 - **Team context awareness** of all available agents
 - **Workflow management** capabilities
 
@@ -124,18 +128,18 @@ Orchestrator agents have special capabilities for team coordination, while regul
 
 ## Related Topics
 
-- [Handoffs](/docs/handoffs) - Learn about control transfer mechanisms
-- [Delegation](/docs/delegation) - Understand task assignment and response handling
-- [Agents](/docs/agents) - Learn about individual agent configuration
-- [Teams](/docs/teams) - Understand team structure and coordination
-- [Quickstart](/docs/quickstart) - Create your first orchestrated team
+- [Handoffs](handoffs) - Learn about control transfer mechanisms
+- [Delegation](delegation) - Understand task assignment and response handling
+- [Agents](../agents) - Learn about individual agent configuration
+- [Teams](../teams) - Understand team structure and coordination
+- [Quickstart](../quickstart) - Create your first orchestrated team
 
 ## Next Steps
 
 Now that you understand orchestration concepts, learn about the specific mechanisms:
 
-- [Handoffs](/docs/handoffs) - Control transfer between agents
-- [Delegation](/docs/delegation) - Task assignment and response handling
-- [Agents](/docs/agents) - Configure individual agents
-- [Teams](/docs/teams) - Set up coordinated teams
-- [Quickstart](/docs/quickstart) - Build your first orchestrated team
+- [Handoffs](handoffs) - Control transfer between agents
+- [Delegation](delegation) - Task assignment and response handling
+- [Agents](../agents) - Configure individual agents
+- [Teams](../teams) - Set up coordinated teams
+- [Quickstart](../quickstart) - Build your first orchestrated team

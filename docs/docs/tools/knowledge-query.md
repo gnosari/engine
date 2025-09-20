@@ -34,10 +34,12 @@ name: Knowledge Team
 
 # Knowledge bases (automatically adds knowledge_query tool)
 knowledge:
-  - name: "docs"
+  - id: "docs"
+    name: "Documentation"
     type: "website"
     data: ["https://docs.example.com"]
-  - name: "research"
+  - id: "research"
+    name: "Research Materials"
     type: "website" 
     data: ["https://research.example.com"]
 ```
@@ -45,13 +47,6 @@ knowledge:
 :::info Automatic Tool Addition
 When you define knowledge bases in your team configuration, the `knowledge_query` tool is automatically added and available to agents.
 :::
-
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
 
 agents:
   - name: Research Assistant
@@ -68,24 +63,20 @@ agents:
 name: Advanced Knowledge Team
 
 knowledge:
-  - name: "product_docs"
+  - id: "product_docs"
+    name: "Product Documentation"
     type: "website"
     data: 
       - "https://docs.product.com"
       - "https://api.product.com/docs"
-  - name: "training_videos"
+  - id: "training_videos"
+    name: "Training Videos"
     type: "youtube"
     data: ["https://youtube.com/playlist?list=your-playlist-id"]
-  - name: "company_docs"
+  - id: "company_docs"
+    name: "Company Documentation"
     type: "pdf"
     data: ["/path/to/company-handbook.pdf"]
-
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
 
 agents:
   - name: Knowledge Expert
@@ -109,7 +100,8 @@ Gnosari AI Teams supports various knowledge base types through Embedchain:
 
 ```yaml
 knowledge:
-  - name: "web_docs"
+  - id: "web_docs"
+    name: "Web Documentation"
     type: "website"
     data: 
       - "https://docs.example.com"
@@ -125,7 +117,8 @@ Website knowledge bases will crawl and index the content from the specified URLs
 
 ```yaml
 knowledge:
-  - name: "tutorials"
+  - id: "tutorials"
+    name: "Tutorial Videos"
     type: "youtube"
     data:
       - "https://youtube.com/watch?v=video-id"
@@ -141,7 +134,8 @@ YouTube knowledge bases extract and index transcript content from videos for sea
 
 ```yaml
 knowledge:
-  - name: "manuals"
+  - id: "manuals"
+    name: "User Manuals"
     type: "pdf"
     data:
       - "/path/to/user-manual.pdf"
@@ -152,7 +146,8 @@ knowledge:
 
 ```yaml
 knowledge:
-  - name: "faq"
+  - id: "faq"
+    name: "Frequently Asked Questions"
     type: "text"
     data:
       - "Question: How do I reset my password? Answer: Click the forgot password link..."
@@ -189,21 +184,16 @@ agents:
 name: Customer Support Team
 
 knowledge:
-  - name: "product_docs"
+  - id: "product_docs"
+    name: "Product Documentation"
     type: "website"
     data: ["https://docs.product.com"]
-  - name: "faq"
+  - id: "faq"
+    name: "Frequently Asked Questions"
     type: "text"
     data:
       - "Question: How do I install the software? Answer: Download from our website..."
       - "Question: What are the system requirements? Answer: Windows 10 or macOS 10.15..."
-
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
 
 agents:
   - name: Support Agent
@@ -222,8 +212,9 @@ agents:
     instructions: "Coordinate support tasks and delegate to specialists"
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: OtherAgent
+        instructions: "Use for coordination tasks"
 ```
 
 ### Example 2: Research Team
@@ -232,22 +223,18 @@ agents:
 name: Research Team
 
 knowledge:
-  - name: "research_papers"
+  - id: "research_papers"
+    name: "Research Papers"
     type: "website"
     data: ["https://arxiv.org", "https://scholar.google.com"]
-  - name: "industry_reports"
+  - id: "industry_reports"
+    name: "Industry Reports"
     type: "pdf"
     data: ["/data/industry-report-2024.pdf"]
-  - name: "training_videos"
+  - id: "training_videos"
+    name: "Training Videos"
     type: "youtube"
     data: ["https://youtube.com/playlist?list=research-methods"]
-
-tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
-    args:
-      pass
 
 agents:
   - name: Research Analyst
@@ -267,8 +254,9 @@ agents:
     instructions: "Coordinate research projects and delegate tasks"
     orchestrator: true
     model: gpt-4o
-    tools:
-      - delegate_agent
+    delegation:
+      - agent: OtherAgent
+        instructions: "Use for coordination tasks"
 ```
 
 ## Tool Parameters
@@ -317,13 +305,16 @@ Organize knowledge bases by topic or use case:
 
 ```yaml
 knowledge:
-  - name: "technical_docs"
+  - id: "technical_docs"
+    name: "Technical Documentation"
     type: "website"
     data: ["https://docs.technical.com"]
-  - name: "user_guides"
+  - id: "user_guides"
+    name: "User Guides"
     type: "website"
     data: ["https://guides.user.com"]
-  - name: "troubleshooting"
+  - id: "troubleshooting"
+    name: "Troubleshooting Guide"
     type: "text"
     data: ["Common issues and solutions..."]
 ```
@@ -384,7 +375,7 @@ The knowledge query tool includes comprehensive error handling:
 Use debug mode to see detailed knowledge query logs:
 
 ```bash
-poetry run gnosari --config "team.yaml" --message "Your message" --debug
+gnosari --config "team.yaml" --message "Your message" --debug
 ```
 
 :::tip Knowledge Query Debugging
@@ -393,8 +384,8 @@ Debug mode shows detailed information about knowledge base queries, including wh
 
 ## Related Tools
 
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - For multi-agent coordination
-- [API Request Tool](/docs/tools/api-request) - For external service integration
-- [Website Content Tool](/docs/tools/website-content) - For web content retrieval
+- [Delegate Agent Tool](delegate-agent) - For multi-agent coordination
+- [API Request Tool](api-request) - For external service integration
+- [Website Content Tool](website-content) - For web content retrieval
 
 The knowledge query tool is essential for creating intelligent agents that can access and utilize organizational knowledge. Use it to build agents that provide accurate, well-sourced information to users.

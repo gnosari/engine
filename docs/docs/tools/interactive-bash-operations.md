@@ -17,7 +17,7 @@ The Interactive Bash Operations Tool allows agents to execute bash commands that
 ```yaml
 tools:
   - name: "interactive_bash"
-    module: "gnosari.tools.interactive_bash_operations" 
+    module: "gnosari.tools.builtin.interactive_bash_operations" 
     class: "InteractiveBashOperationsTool"
     args:
       base_directory: "./workspace"
@@ -329,7 +329,7 @@ description: "Team for interactive development tasks"
 
 tools:
   - name: "interactive_bash"
-    module: "gnosari.tools.interactive_bash_operations"
+    module: "gnosari.tools.builtin.interactive_bash_operations"
     class: "InteractiveBashOperationsTool"
     args:
       base_directory: "./workspace"

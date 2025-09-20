@@ -6,6 +6,10 @@ sidebar_position: 1
 
 Tools are the building blocks that give your AI agents superpowers. In Gnosari AI Teams, tools enable agents to interact with external systems, query databases, make API calls, delegate tasks, and much more.
 
+:::info MCP Servers
+Looking for dynamic external integrations? Check out [MCP Servers](../mcp-servers) for connecting to external APIs and services through the Model Context Protocol.
+:::
+
 ## What are Tools?
 
 Tools are Python classes that implement specific functionality and can be called by AI agents during their execution. Each tool follows a consistent pattern and can be configured with custom parameters to suit your needs.
@@ -16,11 +20,13 @@ Gnosari AI Teams comes with several powerful built-in tools:
 
 | Tool | Description | Use Case |
 |------|-------------|----------|
-| **delegate_agent** | Delegate tasks to other agents in the team | Multi-agent coordination |
+| **delegate_agent** | *Automatically added to agents with `delegation` property* | Multi-agent coordination |
 | **api_request** | Make HTTP requests to external APIs | External service integration |
 | **knowledge_query** | Query knowledge bases for information | RAG and information retrieval |
+| **sql_query** | Execute SQL queries against any database via SQLAlchemy | Universal database operations |
 | **mysql_query** | Execute SQL queries against MySQL databases | Database operations |
 | **website_content** | Fetch content from websites via API | Web content retrieval |
+| **web_search** | Real-time web search using OpenAI's search infrastructure | Current information gathering |
 | **file_operations** | Read, write, and manage files in a sandboxed directory | Local file management |
 
 ## Adding Tools to Your Team
@@ -46,11 +52,12 @@ Each tool must have a unique name within your team configuration. This name is u
 name: My Team
 
 tools:
-  - name: delegate_agent
-    module: gnosari.tools.delegate_agent
-    class: DelegateAgentTool
+  - name: api_request
+    module: gnosari.tools.builtin.api_request
+    class: APIRequestTool
     args:
-      pass
+      base_url: https://api.example.com
+      timeout: 30
 
 agents:
   - name: Coordinator
@@ -58,7 +65,13 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent
+      - api_request
+
+  - name: Specialist
+    instructions: "Handle specific tasks assigned by the coordinator"
+    model: gpt-4o
+    tools:
+      - api_request
 ```
 
 ### Advanced Tool Configuration
@@ -70,7 +83,7 @@ name: API Team
 
 tools:
   - name: api_request
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://api.example.com
@@ -81,7 +94,7 @@ tools:
       verify_ssl: true
 
   - name: mysql_query
-    module: gnosari.tools.mysql_query
+    module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
       host: localhost
@@ -112,7 +125,7 @@ agents:
     orchestrator: true
     model: gpt-4o
     tools:
-      - delegate_agent  # This agent can delegate tasks
+      - api_request
       
   - name: Researcher
     instructions: "Research information from various sources"
@@ -143,13 +156,13 @@ Group related tools together and use descriptive names:
 ```yaml
 tools:
   - name: external_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://external-service.com
       
   - name: internal_api
-    module: gnosari.tools.api_request
+    module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://internal-service.com
@@ -186,21 +199,23 @@ Database tools like `mysql_query` use connection pooling by default. Configure `
 
 ## Related Topics
 
-- [Agents](/docs/agents) - Learn how to configure agents with tools
-- [Teams](/docs/teams) - Understand team structure and tool assignment
-- [Orchestration](/docs/orchestration) - Learn about agent coordination with tools
-- [Knowledge Bases](/docs/knowledge) - Set up knowledge bases for agents
-- [Quickstart](/docs/quickstart) - Create your first team with tools
+- [Agents](../agents) - Learn how to configure agents with tools
+- [Teams](../teams) - Understand team structure and tool assignment
+- [Orchestration](../coordination/orchestration) - Learn about agent coordination with tools
+- [Knowledge Bases](../knowledge) - Set up knowledge bases for agents
+- [Quickstart](../quickstart) - Create your first team with tools
 
 ## Next Steps
 
 Now that you understand how to add tools to your teams, explore the individual tool documentation:
 
-- [Delegate Agent Tool](/docs/tools/delegate-agent) - Multi-agent coordination
-- [API Request Tool](/docs/tools/api-request) - External API integration
-- [Knowledge Query Tool](/docs/tools/knowledge-query) - Knowledge base queries
-- [MySQL Query Tool](/docs/tools/mysql-query) - Database operations
-- [Website Content Tool](/docs/tools/website-content) - Web content retrieval
-- [File Operations Tool](/docs/tools/file-operations) - Local file management
+- [Delegate Agent Tool](delegate-agent) - Automatic multi-agent coordination
+- [API Request Tool](api-request) - External API integration
+- [Knowledge Query Tool](knowledge-query) - Knowledge base queries
+- [SQL Query Tool](sql-query) - Universal database operations
+- [MySQL Query Tool](mysql-query) - Database operations
+- [Website Content Tool](website-content) - Web content retrieval
+- [Web Search Tool](web-search) - Real-time web search capabilities
+- [File Operations Tool](file-operations) - Local file management
 
 Ready to enhance your agents with powerful tools? Let's dive into each tool's capabilities!
