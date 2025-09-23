@@ -158,7 +158,21 @@ class ApiSession(SessionABC):
                 
                 messages = []
                 for item in items:
-                    message_data = json.dumps(item, separators=(",", ":"))
+                    # Use a more robust serialization approach to preserve reasoning items
+                    try:
+                        # First try to use the item's built-in serialization if available
+                        if hasattr(item, 'model_dump') or hasattr(item, 'dict'):
+                            if hasattr(item, 'model_dump'):
+                                message_data = json.dumps(item.model_dump(), separators=(",", ":"))
+                            else:
+                                message_data = json.dumps(item.dict(), separators=(",", ":"))
+                        else:
+                            # Fall back to standard JSON serialization
+                            message_data = json.dumps(item, separators=(",", ":"))
+                    except (TypeError, AttributeError) as e:
+                        logger.warning(f"Failed to serialize item properly: {e}, using string representation")
+                        message_data = json.dumps(str(item), separators=(",", ":"))
+                    
                     messages.append({"message_data": message_data})
                 
                 async with self._get_http_session() as session:

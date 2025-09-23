@@ -17,31 +17,36 @@ def get_tools_definition(agent_tools: List[str], tool_manager) -> List[str]:
         return []
     
     tool_sections = []
+    tool_descriptions = []
     
-    # # Add tool descriptions
-    # tool_descriptions = []
-    # for tool_name in agent_tools:
-    #     try:
-    #         # Get tool instance from the tool manager
-    #         tool_instance = tool_manager.create_tool_instance(tool_name)
-    #         tool_info = tool_manager.get_tool_info(tool_instance, tool_name)
-    #         tool_descriptions.append(tool_info)
-    #     except Exception:
-    #         # If tool not found, add a placeholder
-    #         tool_descriptions.append(f"Tool: {tool_name}\nDescription: Tool information unavailable")
-    #
-    # if tool_descriptions:
-    #     tool_sections.append("")
-    #     tool_sections.append("AVAILABLE TOOLS:")
-    #     tool_sections.extend(tool_descriptions)
-    #     tool_sections.append("")
-    #     tool_sections.append("TOOL USAGE INSTRUCTIONS:")
-    #     tool_sections.append("- To use a tool, set execute_tool to the tool name and input parameters")
-    #     tool_sections.append("- Set is_done to false when using tools, true when finished")
-    #     tool_sections.append("- Tools will be executed automatically and results provided to you")
-    #     tool_sections.append("CRITICAL:")
-    #     tool_sections.append("- DO NOT USE tools that don't exist in your system")
-    #     tool_sections.append("- Call functions sequentially")
+    # Add tool descriptions
+    for tool_name in agent_tools:
+        try:
+            # Get tool instance and config from registry
+            tool_instance = tool_manager.get_tool(tool_name)
+            tool_config = tool_manager.registry.get_config(tool_name)
+            
+            if tool_instance and tool_config:
+                # Get tool information from config and instance
+                tool_id = tool_config.get('id', tool_name)
+                tool_display_name = tool_config.get('name', tool_name)
+                tool_description = tool_config.get('description', tool_instance.description)
+                
+                # Format as markdown list item
+                tool_info = f"- **{tool_display_name}** (`{tool_id}`): {tool_description}"
+                tool_descriptions.append(tool_info)
+            else:
+                # Fallback if tool not found in registry
+                tool_descriptions.append(f"- **{tool_name}**: Tool information unavailable")
+                
+        except Exception as e:
+            # If tool loading fails, add a placeholder
+            tool_descriptions.append(f"- **{tool_name}**: Tool information unavailable")
+
+    if tool_descriptions:
+        tool_sections.append("## Available Tools")
+        tool_sections.extend(tool_descriptions)
+        tool_sections.append("")
 
     return tool_sections
 

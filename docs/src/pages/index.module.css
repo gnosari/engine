@@ -8,24 +8,24 @@
   text-align: center;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
-  border-bottom: 1px solid #e9ecef;
+  background: linear-gradient(135deg, var(--ifm-background-color) 0%, var(--ifm-background-surface-color) 50%, var(--ifm-background-color) 100%);
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
 }
 
 .heroBanner h1 {
-  color: #212529 !important;
+  color: var(--ifm-color-content) !important;
 }
 
 .heroBanner p {
-  color: #6c757d !important;
+  color: var(--ifm-color-content-secondary) !important;
 }
 
 .heroBanner .hero__title {
-  color: #212529 !important;
+  color: var(--ifm-color-content) !important;
 }
 
 .heroBanner .hero__subtitle {
-  color: #6c757d !important;
+  color: var(--ifm-color-content-secondary) !important;
 }
 
 @media screen and (max-width: 996px) {
@@ -50,53 +50,161 @@
 }
 
 .codeExample {
-  background: #f8f9fa;
+  background: var(--ifm-background-surface-color);
   border-radius: 8px;
   padding: 1rem 1.5rem;
   margin-top: 2rem;
   display: inline-block;
-  border: 1px solid #e9ecef;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  box-shadow: 0 2px 4px var(--ifm-color-emphasis-200);
 }
 
 .codeExample code {
   background: transparent;
-  color: #495057;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: var(--ifm-color-content);
+  font-family: var(--ifm-font-family-monospace);
   font-size: 0.9rem;
   font-weight: 500;
   padding: 0;
   border: none;
 }
 
-.quickStart {
-  padding: 4rem 0;
-  background: #ffffff;
-  border-top: 1px solid #e9ecef;
+
+
+/* Hero improvements */
+.heroContent {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.quickStartDescription {
+.heroTitle {
+  margin-bottom: 1.5rem !important;
+}
+
+.heroSubtitle {
+  font-size: 1.25rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.getStartedButton {
+  background: var(--ifm-color-primary) !important;
+  border-color: var(--ifm-color-primary) !important;
+  font-weight: 600;
+  color: white !important;
+}
+
+.getStartedButton:hover {
+  background: var(--ifm-color-primary-dark) !important;
+  border-color: var(--ifm-color-primary-dark) !important;
+  color: white !important;
+}
+
+.highlightText {
+  color: var(--ifm-color-primary);
+}
+
+/* New Sections Styles */
+
+/* Teams Section */
+.teamsSection {
+  padding: 5rem 0;
+  background: var(--ifm-background-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.teamsSection .row,
+.agentsSection .row,
+.knowledgeSection .row {
+  align-items: stretch;
+  min-height: 500px;
+}
+
+.teamsSection .col,
+.agentsSection .col,
+.knowledgeSection .col {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionContent {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  flex: 1;
+}
+
+.sectionContent > div:first-child {
+  flex: 1;
+}
+
+.sectionIcon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  display: block;
+}
+
+.sectionTitle {
+  color: var(--ifm-color-content) !important;
+  margin-bottom: 1.5rem !important;
+  font-size: 2.5rem !important;
+}
+
+.sectionDescription {
   font-size: 1.1rem;
-  color: #6c757d;
+  color: var(--ifm-color-content-secondary);
   margin-bottom: 2rem;
+  line-height: 1.6;
 }
 
+.featureGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--ifm-color-content-secondary);
+  padding: 0.5rem 0;
+}
+
+.featureIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.sectionButton {
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+/* Code Blocks in Sections */
 .codeBlock {
-  background: #f8f9fa;
-  border-radius: 8px;
+  background: var(--ifm-background-color);
+  border-radius: 12px;
   overflow: hidden;
-  margin: 2rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  box-shadow: 0 4px 12px var(--ifm-color-emphasis-200);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .codeBlockHeader {
-  background: #e9ecef;
-  padding: 0.5rem 1rem;
-  font-size: 0.8rem;
+  background: var(--ifm-color-emphasis-200);
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #495057;
-  border-bottom: 1px solid #dee2e6;
+  color: var(--ifm-color-content);
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
 }
 
 .codeBlockContent {
@@ -104,50 +212,312 @@
   padding: 1.5rem;
   background: transparent;
   overflow-x: auto;
+  flex: 1;
 }
 
 .codeBlockContent code {
   background: transparent;
   color: var(--ifm-color-content);
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 0.9rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
   line-height: 1.5;
 }
 
-.keyBenefits {
-  padding: 4rem 0;
-  background: #f8f9fa;
-  border-top: 1px solid #e9ecef;
+/* Agents Section */
+.agentsSection {
+  padding: 5rem 0;
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
 }
 
-.benefitCard {
-  text-align: center;
-  padding: 2rem 1rem;
-  background: #ffffff;
+/* Orchestration Section */
+.orchestrationSection {
+  padding: 5rem 0;
+  background: var(--ifm-background-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.coordCard {
+  background: var(--ifm-background-surface-color);
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e9ecef;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  box-shadow: 0 2px 8px var(--ifm-color-emphasis-200);
+  transition: all 0.3s ease;
   height: 100%;
+  text-align: center;
 }
 
-.benefitCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+.coordCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--ifm-color-emphasis-300);
 }
 
-.benefitIcon {
-  font-size: 3rem;
+.coordIcon {
+  font-size: 2.5rem;
   margin-bottom: 1rem;
   display: block;
 }
 
-.benefitCard h3 {
-  margin-bottom: 1rem;
-  color: #212529;
+.coordCard h3 {
+  color: var(--ifm-color-content) !important;
+  margin-bottom: 1rem !important;
 }
 
-.benefitCard p {
-  color: #6c757d;
+.coordCard p {
+  color: var(--ifm-color-content-secondary);
+  margin-bottom: 1.5rem;
   line-height: 1.6;
+}
+
+.coordLink {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.coordLink:hover {
+  color: var(--ifm-color-primary-dark);
+  text-decoration: none;
+}
+
+/* Tools Section */
+.toolsSection {
+  padding: 5rem 0;
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.toolCategory {
+  margin-bottom: 3rem;
+}
+
+.toolCategory h3 {
+  color: var(--ifm-color-content) !important;
+  margin-bottom: 2rem !important;
+  font-size: 1.5rem !important;
+}
+
+.toolGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.toolItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  transition: all 0.3s ease;
+}
+
+.toolItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--ifm-color-emphasis-200);
+}
+
+.toolIcon {
+  font-size: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.toolItem strong {
+  color: var(--ifm-color-content);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.toolItem p {
+  color: var(--ifm-color-content-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.mcpFeatures {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mcpFeature {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--ifm-background-surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  transition: all 0.3s ease;
+}
+
+.mcpFeature:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px var(--ifm-color-emphasis-200);
+}
+
+.mcpIcon {
+  font-size: 1.5rem;
+  margin-top: 0.25rem;
+}
+
+.mcpFeature strong {
+  color: var(--ifm-color-content);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.mcpFeature p {
+  color: var(--ifm-color-content-secondary);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Knowledge Section */
+.knowledgeSection {
+  padding: 5rem 0;
+  background: var(--ifm-background-surface-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.knowledgeTypes {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.knowledgeType {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--ifm-color-content-secondary);
+  padding: 0.75rem;
+  background: var(--ifm-background-color);
+  border-radius: 8px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.knowledgeIcon {
+  font-size: 1.25rem;
+}
+
+/* Get Started Section */
+.getStartedSection {
+  padding: 5rem 0;
+  background: var(--ifm-color-primary);
+  color: white;
+  text-align: center;
+}
+
+.getStartedSection .sectionTitle {
+  color: white !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.getStartedSection .sectionDescription {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  margin-bottom: 2.5rem;
+}
+
+.ctaButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primaryCta {
+  background: white !important;
+  color: var(--ifm-color-primary) !important;
+  border-color: white !important;
+  font-weight: 600;
+}
+
+.primaryCta:hover {
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+.secondaryCta {
+  background: transparent !important;
+  color: white !important;
+  border: 2px solid white !important;
+  font-weight: 600;
+}
+
+.secondaryCta:hover {
+  background: white !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .teamsSection,
+  .agentsSection,
+  .orchestrationSection,
+  .toolsSection,
+  .knowledgeSection {
+    padding: 3rem 0;
+  }
+  
+  .teamsSection .row,
+  .agentsSection .row,
+  .knowledgeSection .row {
+    min-height: auto;
+  }
+  
+  .sectionTitle {
+    font-size: 2rem !important;
+  }
+  
+  .sectionContent {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    justify-content: flex-start;
+  }
+  
+  .coordCard {
+    margin-bottom: 1.5rem;
+  }
+  
+  .ctaButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .codeBlock {
+    height: auto;
+    margin-top: 2rem;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .toolGrid,
+  .mcpFeatures {
+    gap: 1rem;
+  }
+  
+  .toolItem,
+  .mcpFeature {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .knowledgeTypes {
+    gap: 0.5rem;
+  }
+  
+  .featureGrid {
+    gap: 0.75rem;
+  }
 }

@@ -1,22 +1,129 @@
+id: neomanex_demo_team_1
 name: Neomanex Team Demo
-description: 'Single Agent Team with Neomanex website content.'
+description: 'Single Agent Team with Neomanex website content, file operations, and web scraping capabilities.'
+config:
+  max_turns: 200  # Maximum number of conversation turns per execution
 
-agents:
-  - instructions: 'Give responses based on your Knowledge Sources
-      Role: Expert in injected Knowledge
-      Backstory: You are a knowledge expert that responds to messages always based on
-      your injected knowledge '
-    knowledge:
-      - 6a939f52-0742-4cc7-aba0-f0112ba7b770
-    model: gpt-4o
-    name: Neomanex Knowledge Agent
-    temperature: 0.1
+human_supervision:
+  enabled: true
+  types:
+    - follow-up
+    - decision
+  notifications:
+    - new_message
+    - end_execution
+
+cronjob:
+  - id: my_cronjob
+    name: 'Daily Report'
+    description: 'Daily team report'
+    expression: "* 0 0 0 0"
+    message: >
+      Build a report and send it to me to slack.
+
+# Tools configuration
+tools:
+  # Website Content Tool for fetching web pages
+  - name: Website Content Fetcher
+    id: website_tool
+    description: "Fetches live content from web pages using the Neomanex content API for real-time information retrieval"
+    module: gnosari.tools.builtin.website_content
+    class: WebsiteContentTool
+    args:
+      base_url: "https://r.ai.neomanex.com"
+      timeout: 30
+      tool_name: "website_content"
+      tool_description: "Fetch content from web pages using the Neomanex content API"
+
+  # File Operations Tool for managing files
+  - name: File Manager
+    id: file_tool
+    description: "Manages files in the Neomanex workspace including reading, writing, and organizing content"
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".html", ".xml"]
+      max_file_size: 2097152  # 2MB
+
+  - name: "playwright"
+    id: playwright_tool
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@playwright/mcp@latest"]
+
+  # Interactive Bash Operations Tool for terminal interactions
+  - name: Interactive Bash
+    id: interactive_bash_tool
+    description: "Execute interactive bash commands and handle terminal prompts"
+    module: gnosari.tools.builtin.interactive_bash_operations
+    class: InteractiveBashOperationsTool
+    args:
+      base_directory: "./workspace"
+      unsafe_mode: false
+      session_timeout: 3600
 
 knowledge:
-  - data:
+  - id: neomanex_knowledge_base
+    name: Neomanex Website Knowledge
+    description: 'Comprehensive knowledge base containing information from the Neomanex public website including pages and blog posts'
+    type: sitemap
+    config:
+      embedder:
+        provider: "openai"
+        config:
+          model: "text-embedding-3-small"
+      chunker:
+        chunk_size: 1000
+        chunk_overlap: 200
+        length_function: "len"
+    data:
       - http://neomanex.com/page-sitemap.xml
       - http://neomanex.com/post-sitemap.xml
-    description: 'Knowledge source: 6a939f52-0742-4cc7-aba0-f0112ba7b770'
-    name: 6a939f52-0742-4cc7-aba0-f0112ba7b770
+
+  - id: gnosari_docs_knowledge_base
+    name: Gnosari Docs Knowledge
+    description: 'Comprehensive knowledge base containing information Gnosari Docs'
     type: sitemap
+    config:
+      embedder:
+        provider: "openai"
+        config:
+          model: "text-embedding-3-small"
+      chunker:
+        chunk_size: 1000
+        chunk_overlap: 200
+        length_function: "len"
+    data:
+      - http://docs.gnosari.com/sitemap.xml
+
+agents:
+  - id: neomanex_expert_agent
+    name: Neomanex Knowledge Expert
+    description: "AI expert specializing in Neomanex content with capabilities for knowledge retrieval, web scraping, and file management"
+    instructions: >
+      You are a Neomanex Lead Hunter working on the Neomanex website, a company you work for the Commercial Team. 
+      The company focuses on research and development of AI Systems focused on AI Teams and AI Workforce. 
+      Neomanex has created Gnosari, an AI Workforce platform. 
+      
+      1. **Knowledge Bases** 
+        - Query the knowledge bases multiple times (as many times as needed) until you find a definitive answer.
+      
+      Always be helpful and thorough in your responses, leveraging all available tools.
+    knowledge:
+      - neomanex_knowledge_base
+      - gnosari_docs_knowledge_base
+    model: gpt-4o
+    temperature: 0.1
+    tools:
+      - website_tool
+      - file_tool
+      - playwright_tool
+      - interactive_bash_tool
+  - id: neomanex_general_agent
+    name: General Agent
+    instructions: > 
+      You are a helpful assistant. Fulfill user request using tools if necessary.
+    tools:
+      -  interactive_bash_tool
 

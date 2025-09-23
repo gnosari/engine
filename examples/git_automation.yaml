@@ -1,0 +1,138 @@
+name: "Git Automation Team"
+description: "Team that automates git repository operations and generates summaries"
+
+# Tools configuration with the enhanced BashTool
+tools:
+  # Example 1: Pre-configured commands that run in sequence
+  - name: "git_sync"
+    id: "git_sync_tool"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      commands: 
+        - "cd ${GITHUB_REPO_PATH:-./repo} && git pull origin main"  # Pull updates from main branch
+        - "git log -5 --pretty=format:'%h - %an, %ar : %s' > recent_commits.txt"  # Get last 5 commits
+        - "git diff HEAD~1 --stat > changes_summary.txt"  # Get change statistics
+      timeout: 30
+      stop_on_error: true  # Stop if any command fails
+      env_vars:
+        GITHUB_REPO_PATH: "./workspace/my-repo"  # Default repo path
+  
+  # Example 2: Flexible bash tool for runtime commands
+  - name: "bash"
+    id: "bash_executor"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      base_directory: "./workspace"
+      allowed_commands: ["git", "npm", "python", "cat", "echo", "ls"]
+      blocked_commands: ["rm", "sudo", "chmod", "chown"]
+      max_output_size: 2097152  # 2MB
+      timeout: 60
+  
+  # Example 3: Build automation tool with chained commands
+  - name: "build_and_test"
+    id: "build_tool"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      commands:
+        - "npm install"  # Install dependencies
+        - "npm run lint && npm run format"  # Lint and format code
+        - "npm test -- --coverage"  # Run tests with coverage
+        - "npm run build"  # Build the project
+      working_directory: "project"
+      timeout: 120
+      stop_on_error: false  # Continue even if a step fails
+      capture_output: true
+  
+  # Example 4: Data processing pipeline
+  - name: "data_pipeline"
+    id: "data_processor"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      commands:
+        - "python scripts/fetch_data.py --source ${DATA_SOURCE_URL}"
+        - "python scripts/transform_data.py --input raw_data.csv --output processed_data.csv"
+        - "python scripts/generate_report.py --data processed_data.csv --format ${REPORT_FORMAT:-pdf}"
+        - "aws s3 cp report.${REPORT_FORMAT:-pdf} s3://${S3_BUCKET}/reports/$(date +%F)-report.${REPORT_FORMAT:-pdf}"
+      timeout: 300
+      env_vars:
+        DATA_SOURCE_URL: "https://api.example.com/data"
+        S3_BUCKET: "my-reports-bucket"
+        REPORT_FORMAT: "pdf"
+      working_directory: "data-processing"
+  
+  # Example 5: Unsafe mode for system administration (use with caution!)
+  - name: "system_admin"
+    id: "admin_tool"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      unsafe_mode: true  # WARNING: Disables all safety checks!
+      commands:
+        - "docker ps -a"
+        - "docker system prune -f"
+        - "systemctl status nginx"
+        - "df -h"
+        - "free -m"
+      timeout: 30
+      tool_description: "System administration commands (UNSAFE MODE)"
+
+# Agents configuration
+agents:
+  - name: "DevOps Manager"
+    instructions: |
+      You are a DevOps manager responsible for coordinating git operations and build processes.
+      
+      Your responsibilities:
+      1. Synchronize git repositories using the git_sync tool
+      2. Run builds and tests using the build_and_test tool
+      3. Process data pipelines when needed
+      4. Generate reports and summaries
+      
+      Always check command outputs and handle errors appropriately.
+    orchestrator: true
+    model: "gpt-4o"
+    temperature: 0.1
+    tools: ["git_sync", "build_and_test", "data_pipeline", "bash", "delegate_agent"]
+  
+  - name: "Build Engineer"
+    instructions: |
+      You are a build engineer responsible for running build processes and tests.
+      
+      Use the build_and_test tool to:
+      - Install dependencies
+      - Run linting and formatting
+      - Execute tests with coverage
+      - Build the project
+      
+      Report any build failures or test issues to the DevOps Manager.
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    tools: ["build_and_test", "bash"]
+  
+  - name: "Data Processor"
+    instructions: |
+      You are a data processing specialist who handles data pipelines.
+      
+      Use the data_pipeline tool to:
+      - Fetch data from external sources
+      - Transform and process data
+      - Generate reports
+      - Upload results to S3
+      
+      Ensure all data processing steps complete successfully.
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    tools: ["data_pipeline", "bash"]
+
+# Agent handoff configuration
+handoffs:
+  - from: "DevOps Manager"
+    to: ["Build Engineer", "Data Processor"]
+  - from: "Build Engineer"
+    to: ["DevOps Manager"]
+  - from: "Data Processor"
+    to: ["DevOps Manager"]

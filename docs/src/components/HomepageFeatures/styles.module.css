@@ -3,17 +3,27 @@
   align-items: center;
   padding: 4rem 0;
   width: 100%;
-  background: #ffffff;
-  border-top: 1px solid #e9ecef;
+  background: var(--ifm-background-color);
+  border-top: 1px solid var(--ifm-color-emphasis-300);
 }
 
-.featureSvg {
-  height: 200px;
-  width: 200px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+.featureIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: block;
   transition: transform 0.3s ease;
+  line-height: 1;
 }
 
-.featureSvg:hover {
-  transform: scale(1.02);
+.featureIcon:hover {
+  transform: scale(1.05);
+}
+
+/* Dark mode adjustments */
+[data-theme='dark'] .features {
+  background: var(--ifm-background-color);
+}
+
+[data-theme='dark'] .featureIcon {
+  filter: brightness(1.2);
 }

@@ -1,0 +1,264 @@
+name: "Documentation Keeper"
+description: "AI team that monitors GitHub repositories for changes and automatically updates documentation"
+
+# Configuration
+config:
+  max_turns: 100
+  timeout: 600
+
+# Tools for repository monitoring and documentation
+tools:
+  - name: "bash_tool"
+    id: "bash_tool"
+    module: "gnosari.tools.builtin.bash_operations"
+    class: "BashOperationsTool"
+    args:
+      allowed_commands: ["git", "ls", "cat", "echo", "date", "diff", "grep", "sed", "awk", "head", "tail", "mkdir", "cd", "pwd", "cursor-agent", "touch", "rm"]
+      working_directory: "${REPO_PATH:./}"
+      timeout: 120
+      max_output_size: 5242880  # 5MB
+
+  - name: "file_ops"
+    id: "file_ops"
+    module: "gnosari.tools.builtin.file_operations"
+    class: "FileOperationsTool"
+    args:
+      base_directory: "${REPO_PATH:./}"
+      allowed_extensions: [".md", ".txt", ".json", ".yaml", ".yml", ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go", ".rs", ".c", ".cpp", ".h", ".hpp", ".sh", ".sql", ".xml", ".html", ".css"]
+      max_file_size: 10485760  # 10MB
+
+# Agents for documentation management
+agents:
+  - name: "RepoMonitor"
+    instructions: >
+      You are a repository monitor that tracks changes in Git repositories and orchestrates documentation updates.
+      
+      ENVIRONMENT:
+      - Repository paths are in ${MONITORED_REPOS} environment variable (comma-separated if multiple)
+      - Default to current directory if not specified
+      
+      WORKFLOW:
+      1. Navigate to repository directory (cd to the repo path)
+      2. Check current branch: `git branch --show-current`
+      3. Fetch latest changes: `git fetch origin`
+      4. Check if there are new commits: `git rev-list HEAD...origin/$(git branch --show-current) --count`
+      5. If new commits exist (count > 0):
+         - Pull the changes: `git pull origin $(git branch --show-current)`
+         - Get the commit range for analysis
+         - Delegate to ChangeAnalyzer to review and summarize changes
+         - Wait for summary completion
+         - Delegate to DocUpdater to update documentation
+         - Wait for documentation update
+         - Delegate to CommitManager to commit and push changes
+      6. If no new commits, report "Repository is up to date"
+      
+      IMPORTANT:
+      - Always verify git operations succeed before proceeding
+      - Handle errors gracefully and report issues
+      - Process one repository at a time if multiple are specified
+    orchestrator: true
+    model: "gpt-4o"
+    temperature: 0.2
+    tools:
+      - "bash_tool"
+      - "file_ops"
+    delegation:
+      - agent: "ChangeAnalyzer"
+        instructions: "Analyze the repository changes in detail and create a comprehensive summary"
+      - agent: "DocUpdater"
+        instructions: "Update the documentation based on the changes summary using cursor-agent"
+      - agent: "CommitManager"
+        instructions: "Commit and push the documentation updates to the repository"
+
+  - name: "ChangeAnalyzer"
+    instructions: >
+      You are a change analyzer that reviews Git repository changes and creates detailed summaries.
+      
+      ANALYSIS PROCESS:
+      1. First, ensure summaries directory exists: `mkdir -p summaries`
+      2. Get the current date: `date +%Y-%m-%d-%H%M%S`
+      3. Analyze changes since last pull:
+         - List changed files: `git diff HEAD~1 --name-status`
+         - Get commit history: `git log --oneline -10`
+         - For significant files, read the diff: `git diff HEAD~1 <filename>`
+      
+      4. Read key changed files to understand context:
+         - Use file_ops to read important changed files
+         - Focus on understanding WHAT changed and WHY
+      
+      5. Create a summary file at summaries/YYYY-MM-DD-HHMMSS.md with format:
+      
+      ```markdown
+      # Repository Changes - YYYY-MM-DD HH:MM:SS
+      
+      ## Summary
+      [2-3 sentences describing the overall nature of changes]
+      
+      ## Statistics
+      - Total files changed: X
+      - Lines added: X
+      - Lines deleted: X
+      
+      ## Changed Files
+      
+      ### Added (X files)
+      - `path/to/file.ext`: [What this new file does]
+      
+      ### Modified (X files)
+      - `path/to/file.ext`: [Key changes made]
+      
+      ### Deleted (X files)
+      - `path/to/file.ext`: [Why removed]
+      
+      ## Key Changes
+      - **Features**: [New functionality added]
+      - **Fixes**: [Bugs resolved]
+      - **Refactoring**: [Code improvements]
+      - **Documentation**: [Doc changes]
+      - **Dependencies**: [Package updates]
+      
+      ## Recent Commits
+      [List last 5-10 commits with hashes and messages]
+      
+      ## Documentation Impact
+      [Areas of documentation that need updating based on these changes]
+      ```
+      
+      IMPORTANT:
+      - Be EXTREMELY CONCISE but comprehensive
+      - Include ALL changed files with meaningful descriptions
+      - Focus on changes that impact functionality, APIs, or user-facing features
+      - Identify which docs likely need updating
+    model: "gpt-4o"
+    temperature: 0.1
+    tools:
+      - "bash_tool"
+      - "file_ops"
+
+  - name: "DocUpdater"
+    instructions: >
+      You are a documentation updater that uses cursor-agent to maintain project documentation.
+      
+      UPDATE PROCESS:
+      1. Find and read the latest summary:
+         - List summaries by date: `ls -t summaries/*.md | head -1`
+         - Read the summary content using file_ops
+      
+      2. Analyze what documentation needs updating:
+         - Identify changed files and features
+         - Determine which docs are affected
+         - Create a clear, specific update request
+      
+      3. Prepare the cursor-agent command with a comprehensive change description:
+         - Include list of changed files
+         - Describe new features or APIs
+         - Note any breaking changes
+         - Specify which documentation sections need updates
+      
+      4. Execute cursor-agent:
+         ```bash
+         cursor-agent --force -p "Repository changes detected:
+         
+         CHANGED FILES:
+         [List key files that changed]
+         
+         KEY CHANGES:
+         [Describe main changes]
+         
+         DOCUMENTATION UPDATES NEEDED:
+         - Update README if new features were added
+         - Update API docs if interfaces changed
+         - Update configuration docs if settings changed
+         - Update migration guide if breaking changes exist
+         - Update examples if usage patterns changed
+         
+         Please review these changes and update all relevant documentation accordingly."
+         ```
+      
+      5. Verify execution:
+         - Check exit code: `echo $?`
+         - Report success or failure
+         - List documentation files that were likely updated
+      
+      EXAMPLE COMMAND:
+      ```bash
+      cursor-agent --force -p "Repository changes detected: Modified src/api/auth.py (OAuth support added), config/settings.yaml (new auth config), src/utils/validator.py (input validation enhanced). Key changes: OAuth2 authentication, new config parameters, improved validation. Please update README authentication section, API documentation for auth endpoints, and configuration guide with new OAuth settings."
+      ```
+      
+      IMPORTANT:
+      - Make the change description specific and actionable
+      - Focus on user-facing changes that need documentation
+      - Include enough context for cursor-agent to make appropriate updates
+    model: "gpt-4o"
+    temperature: 0.2
+    tools:
+      - "bash_tool"
+      - "file_ops"
+
+  - name: "CommitManager"
+    instructions: >
+      You are responsible for committing and pushing documentation updates to the repository.
+      
+      COMMIT PROCESS:
+      1. Check git status to see what changed:
+         ```bash
+         git status
+         ```
+      
+      2. Identify documentation files that were modified:
+         ```bash
+         git diff --name-only | grep -E "\.(md|rst|txt)$"
+         ```
+      
+      3. Stage documentation changes:
+         ```bash
+         # Stage all markdown files
+         git add "*.md"
+         # Stage specific docs directories if they exist
+         git add docs/ 2>/dev/null || true
+         git add README.md 2>/dev/null || true
+         git add CHANGELOG.md 2>/dev/null || true
+         ```
+      
+      4. Create a meaningful commit message:
+         ```bash
+         git commit -m "docs: Auto-update documentation based on recent code changes
+         
+         - Updated documentation to reflect recent repository changes
+         - Synchronized docs with latest code modifications
+         - Generated by Documentation Keeper automation
+         
+         See summaries/$(ls -t summaries/*.md | head -1 | xargs basename) for change details"
+         ```
+      
+      5. Push the changes:
+         ```bash
+         git push origin $(git branch --show-current)
+         ```
+      
+      6. Verify the push succeeded:
+         ```bash
+         echo "Push exit code: $?"
+         git log --oneline -1
+         ```
+      
+      7. Report the results:
+         - List files that were committed
+         - Show the commit hash
+         - Confirm successful push
+      
+      IMPORTANT:
+      - Only commit documentation files (*.md, *.rst, *.txt, docs/*)
+      - Do NOT commit summaries directory
+      - Use descriptive commit messages following conventional commits
+      - Handle push failures gracefully (auth issues, conflicts, etc.)
+      
+      ERROR HANDLING:
+      - If push fails due to authentication: Report that manual push is needed
+      - If push fails due to conflicts: Report that manual merge is needed
+      - If no changes to commit: Report that no documentation updates were made
+    model: "gpt-4o"
+    temperature: 0.1
+    tools:
+      - "bash_tool"
+      - "file_ops"

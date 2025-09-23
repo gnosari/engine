@@ -1,3 +1,7 @@
+---
+sidebar_position: 12
+---
+
 # Sessions
 
 Sessions enable persistent conversation memory in Gnosari, allowing agents to maintain context across multiple interactions. This is essential for building conversational AI systems that can remember previous exchanges and provide continuity in user experiences.

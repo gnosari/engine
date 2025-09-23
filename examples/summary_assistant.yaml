@@ -1,0 +1,68 @@
+id: learn_demo
+name: Learning Assistant Team
+description: 'AI team that fetches web content, creates summaries, and documents findings using multiple tools'
+config:
+  max_turns: 200  # Maximum number of conversation turns per execution
+
+# Tools configuration
+tools:
+  # Website Content Tool for fetching web pages
+  - name: Website Content Fetcher
+    id: website_tool
+    description: "Fetches live content from web pages using the Neomanex content API for real-time information retrieval"
+    module: gnosari.tools.builtin.website_content
+    class: WebsiteContentTool
+    args:
+      base_url: "https://r.ai.neomanex.com"
+      timeout: 30
+      tool_name: "website_content"
+      tool_description: "Fetch content from web pages using the Neomanex content API"
+
+  # File Operations Tool for managing files
+  - name: File Manager
+    id: file_tool
+    description: "Manages files in the Neomanex workspace including reading, writing, and organizing content"
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".html", ".xml"]
+      max_file_size: 2097152  # 2MB
+
+  - name: "playwright"
+    id: playwright_tool
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@playwright/mcp@latest"]
+
+  # Interactive Bash Operations Tool for terminal interactions
+  - name: Interactive Bash
+    id: interactive_bash_tool
+    description: "Execute interactive bash commands and handle terminal prompts"
+    module: gnosari.tools.builtin.interactive_bash_operations
+    class: InteractiveBashOperationsTool
+    args:
+      base_directory: "./workspace"
+      unsafe_mode: false
+      session_timeout: 3600
+
+agents:
+  - id: summary_writer
+    name: Knowledge Summary Writer
+    description: "Fetches web content and creates comprehensive summaries and documentation"
+    instructions: >
+      You are a learning assistant that helps users gather and organize information.
+      
+      When given a request here is a guideline how to handle it:
+      1. Use the website content tool to fetch relevant web pages
+      2. Use playwright to navigate and interact with websites when needed
+      3. Create concise summaries of the collected information
+      4. Document findings in markdown files using the file operations tool
+      5. Organize content logically for easy reference
+    model: gpt-5
+    temperature: 1 # gpt-5 does not support temperature parameter. Leave it 1.
+    tools:
+      - website_tool
+      - file_tool
+      - playwright_tool
+      - interactive_bash_tool

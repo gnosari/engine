@@ -143,8 +143,20 @@ class DatabaseSession(SessionABC):
                 raise
     
     async def _serialize_item(self, item: TResponseInputItem) -> str:
-        """Serialize an item to JSON string."""
-        return json.dumps(item, separators=(",", ":"))
+        """Serialize an item to JSON string, preserving reasoning items."""
+        try:
+            # First try to use the item's built-in serialization if available
+            if hasattr(item, 'model_dump') or hasattr(item, 'dict'):
+                if hasattr(item, 'model_dump'):
+                    return json.dumps(item.model_dump(), separators=(",", ":"))
+                else:
+                    return json.dumps(item.dict(), separators=(",", ":"))
+            else:
+                # Fall back to standard JSON serialization
+                return json.dumps(item, separators=(",", ":"))
+        except (TypeError, AttributeError) as e:
+            logger.warning(f"Failed to serialize item properly: {e}, using string representation")
+            return json.dumps(str(item), separators=(",", ":"))
 
     async def get_items(self, limit: int | None = None) -> List[TResponseInputItem]:
         """Retrieve conversation history for this session."""

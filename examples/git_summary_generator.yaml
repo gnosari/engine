@@ -1,0 +1,62 @@
+name: "Git Summary Generator"
+description: "Automated team that pulls git updates and generates summaries"
+
+# Environment variables can be set in .env file or at runtime
+# GITHUB_REPO_PATH=/path/to/your/repo
+# GPT_SUMMARIZER_PATH=/usr/local/bin/gpt-summarize
+
+tools:
+  # Your exact configuration with the new BashTool
+  - name: "git_command"
+    id: "git_tool"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      commands: 
+        - "cd ${GITHUB_REPO_PATH} && git pull"  # Pull updates from the repo
+        - "git log -1 --pretty=format:'%h %s' > changes.txt"  # Get the latest changes
+        - "cat changes.txt | ${GPT_SUMMARIZER_PATH:-gpt-summarize} --output summaries/$(date +%F).md"  # Generate summary
+      timeout: 30
+      base_directory: "./workspace"
+      stop_on_error: true
+      capture_output: true
+  
+  # Alternative: Using command chaining with && and ;
+  - name: "git_summary_chain"
+    id: "git_chain_tool"
+    module: "gnosari.tools.builtin.bash"
+    class: "BashTool"
+    args:
+      # Single command with chaining operators
+      command: "cd ${GITHUB_REPO_PATH} && git pull && git log -1 --pretty=format:'%h %s' > changes.txt && cat changes.txt | gpt-summarize --output summaries/$(date +%F).md"
+      timeout: 30
+      base_directory: "./workspace"
+      env_vars:
+        GITHUB_REPO_PATH: "./my-repo"  # Default value if not in environment
+
+agents:
+  - name: "Git Monitor"
+    instructions: |
+      You are a Git repository monitor that tracks changes and generates summaries.
+      
+      Your workflow:
+      1. Use the git_tool to pull latest changes from the repository
+      2. Review the command output to see what changed
+      3. The tool will automatically generate a summary in the summaries folder
+      4. Report the results back to the user
+      
+      Environment variables:
+      - GITHUB_REPO_PATH: Path to the git repository
+      - GPT_SUMMARIZER_PATH: Path to the gpt-summarize tool (optional)
+      
+      If any step fails, report the error and suggest fixes.
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    tools: ["git_tool", "git_chain_tool"]
+    orchestrator: true
+
+# Example usage:
+# poetry run gnosari --config examples/git_summary_generator.yaml --message "Pull the latest changes and generate a summary"
+#
+# Or with environment variables:
+# GITHUB_REPO_PATH=/home/user/myrepo poetry run gnosari --config examples/git_summary_generator.yaml --message "Update and summarize"

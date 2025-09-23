@@ -1,0 +1,43 @@
+name: "Simple Async Delegation Test"
+id: "simple_async_delegation_test"
+description: "Test async delegation functionality"
+
+config:
+  max_turns: 5
+
+tools:
+  - name: "File Manager"
+    id: "file_tool"
+    description: "Manages files"
+    module: "gnosari.tools.builtin.file_operations"
+    class: "FileOperationsTool"
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".md"]
+
+agents:
+  - name: "Manager"
+    id: "manager_agent"
+    instructions: |
+      You are a manager that delegates tasks to workers. 
+      When asked to do something, delegate it to the worker agent.
+    orchestrator: true
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    delegation:
+      - agent: "worker_agent"
+        mode: "async"
+        priority: 3
+        instructions: "Delegate file tasks to worker asynchronously"
+    tools:
+      - "file_tool"
+  
+  - name: "Worker"
+    id: "worker_agent"
+    instructions: |
+      You are a worker that handles file operations.
+      You help with reading, writing, and managing files.
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    tools:
+      - "file_tool"

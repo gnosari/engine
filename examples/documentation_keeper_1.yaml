@@ -1,0 +1,39 @@
+name: "GitHub Tracker Team"
+description: "Team to monitor specified GitHub repositories for changes and update summaries."
+config:
+  max_turns: 100
+  timeout: 300
+
+# Tools
+tools:
+  - name: "git_tool"
+    module: "gnosari.tools.builtin.file_operations"
+    class: "FileOperationsTool"
+    args:
+      base_directory: "./repos" # Assuming a directory for git repos
+      allowed_extensions: ["md"]
+      max_file_size: 10485760  # Max file size in bytes
+      tool_name: "git_tool"
+      tool_description: "Manage and track Git repository changes."
+
+# Agents
+agents:
+  - name: "RepoChangeMonitor"
+    instructions: "Monitor specified GitHub repository for changes and summarize updates."
+    tools: ["git_tool"]
+    delegation:
+      - agent: "ChangeSummarizer"
+        instructions: "Summarize changes in the repository into markdown files."
+
+  - name: "ChangeSummarizer"
+    instructions: "Review changes and write summaries."
+    tools: ["git_tool"]
+    # Placeholder for the bash command
+    delegated_command: | 
+      bash -c "git -C ${REPO_PATH} pull && 
+      if [[ $(git -C ${REPO_PATH} diff --name-only HEAD@{1} HEAD) ]]; then
+        CHANGES=$(git -C ${REPO_PATH} log -1 --stat);
+        DATE=$(date +'%Y-%m-%d');
+        echo \"$CHANGES\" > summaries/${DATE}.md;
+        cursor-agent --force -p \"This has changed in the repo recently: ${CHANGES}. Please update the docs.\";
+      fi"

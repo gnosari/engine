@@ -4,7 +4,7 @@ tools:
     class: WebSearchTool
 
   - name: website_content
-    module: gnosari.tools.website_content
+    module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://r.ai.neomanex.com
