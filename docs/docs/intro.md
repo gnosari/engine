@@ -52,7 +52,7 @@ Ready to create your first AI team? Our comprehensive quickstart guide will have
 - 🤖 [Agents](agents) - Learn about agent configuration, instructions, and capabilities
 - 👥 [Teams](teams) - Understand team structure, coordination, and workflows
 - 🎭 [Orchestration](coordination/orchestration) - Learn about agent coordination and workflow management
-- 📚 [Knowledge Bases](knowledge) - Set up knowledge bases for RAG capabilities
+- 📚 [Knowledge Bases](knowledge-bases/intro) - Set up knowledge bases for RAG capabilities
 - 🛠️ [Tools Overview](tools/intro) - Learn about built-in tools and how to use them
 - 📝 [Examples](examples) - Explore real-world use cases
 - 🔧 [API Reference](api) - Detailed API documentation

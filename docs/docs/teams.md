@@ -842,7 +842,7 @@ Use environment variables for sensitive information like API keys, database pass
 - [Handoffs](coordination/handoffs) - Learn about control transfer mechanisms
 - [Delegation](coordination/delegation) - Understand task assignment and response handling
 - [Tools](tools/intro) - Explore tools for team capabilities
-- [Knowledge](knowledge) - Understand knowledge base integration
+- [Knowledge Bases](knowledge-bases/intro) - Understand knowledge base integration
 - [MCP Servers](mcp-servers) - Connect to external APIs and services
 - [Quickstart](quickstart) - Create your first team
 
@@ -854,5 +854,5 @@ Now that you understand teams, learn how to:
 - [Use handoffs](coordination/handoffs) for control transfer
 - [Implement delegation](coordination/delegation) for task assignment
 - [Add tools](tools/intro) to enhance team capabilities
-- [Set up knowledge bases](knowledge) for information access
+- [Set up knowledge bases](knowledge-bases/intro) for information access
 - [Create your first team](quickstart) with the quickstart guide

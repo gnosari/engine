@@ -1,0 +1,93 @@
+id: documentation_keeper
+name: Documentation Keeper Team
+description: ''
+config:
+  max_turns: 200  # Maximum number of conversation turns per execution
+
+# Tools configuration
+tools:
+
+  # Website Content Tool for fetching web pages
+  - name: Website Content Fetcher
+    id: website_tool
+    description: "Fetches live content from web pages using the Neomanex content API for real-time information retrieval"
+    module: gnosari.tools.builtin.website_content
+    class: WebsiteContentTool
+    args:
+      base_url: "https://r.ai.neomanex.com"
+      timeout: 30
+      tool_name: "website_content"
+      tool_description: "Fetch content from web pages using the Neomanex content API"
+
+  # File Operations Tool for managing files
+  - name: File Manager
+    id: file_tool
+    description: "Manages files in the Neomanex workspace including reading, writing, and organizing content"
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".html", ".xml", ".py"]
+      max_file_size: 2097152  # 2MB
+
+  - name: "playwright"
+    id: playwright_tool
+    connection_type: "stdio"
+    command: "npx"
+    args: ["-y", "@playwright/mcp@latest"]
+
+  - name: bash_operations
+    module: gnosari.tools.builtin.bash_operations
+    class: BashOperationsTool
+    mode: async
+    args:
+      base_directory: "./workspace"
+      max_output_size: 1048576  # 1MB
+
+  # Interactive Bash Operations Tool for terminal interactions
+  - name: Interactive Bash
+    id: interactive_bash_tool
+    description: "Execute interactive bash commands and handle terminal prompts"
+    module: gnosari.tools.builtin.interactive_bash_operations
+    class: InteractiveBashOperationsTool
+    args:
+      base_directory: "./workspace"
+      unsafe_mode: false
+      session_timeout: 3600
+
+agents:
+  - id: doc_keeper_coordinator
+    name: Documentation Keeper Coordinator
+    description: ""
+    instructions: >
+      1. If the repository is not present, clone the repository https://github.com/gnosari/engine
+      2. In the repostory docs/docs folder are all the md files (docusaurus docs)
+      3. For every page in the documentation (based on user request) contact documentation_code_cheker agent who will review if the documentation is accurate
+        eg. Ask the Documentation Code Cheker Agent to review one page at a time.
+    model: gpt-4o-mini
+    delegation:
+      - agent: documentation_code_cheker
+#        mode: async
+        instructions: Ask the Documentation Code Cheker Agent to review one page at a time. Use async mode when delegating.
+    tools:
+      - bash_operations
+      - file_tool
+      - playwright_tool
+
+  - id: documentation_code_cheker
+    name: Documentation Code Checker
+    model: gpt-4o-mini
+    instructions: >
+      You will receive requests from coordinator to review a doc file inside the gnosari engine project. 
+      The repository is located in engine folder. 
+      You need to review the page and the relevant code in `engine` folder and make sure the documentation page is accurate.
+      
+      When something needs to be updated because is not accurate:
+       1. Execute a command in bash to use a coding agent cli to perform the task `cursor-agent "{explain what needs to be changed and where}" -p --force`. 
+          Example: execute -  `cursor-agent "Update the {directory}/intro.md page adding / updating etc" --force -p`
+       2. Once completed review the file updated and, if necessary, use the command cursor-agent as many times as you need to make more updates.
+      
+      When you are done respond with the details of the updates done.
+    tools:
+      - bash_operations
+      - file_tool

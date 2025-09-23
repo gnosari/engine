@@ -1,0 +1,35 @@
+name: "Async Delegation Test Team"
+description: "Test team to verify async delegation functionality with team reconstruction"
+id: "async_delegation_test"
+
+tools:
+  - name: "delegate_agent"
+    module: "gnosari.tools.builtin.delegation"
+    class: "DelegateAgentTool"
+    mode: "async"  # Enable async delegation
+    args: {}
+
+agents:
+  - name: "Manager"
+    id: "manager_agent"
+    description: "Manager agent that delegates tasks to Alice asynchronously"
+    instructions: |
+      You are a manager who coordinates tasks with team members.
+      Use async delegation to assign tasks to Alice.
+      When delegating, clearly state what you want Alice to do.
+    orchestrator: true
+    model: "gpt-4o"
+    temperature: 0.1
+    tools: ["delegate_agent"]
+    can_transfer_to: ["Alice"]
+
+  - name: "Alice"
+    id: "alice_agent"
+    description: "Worker agent that handles delegated tasks"
+    instructions: |
+      You are Alice, a helpful team member.
+      Complete any tasks delegated to you by the Manager.
+      Provide clear and detailed responses.
+    model: "gpt-4o"
+    temperature: 0.7
+    tools: []

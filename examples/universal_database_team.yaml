@@ -1,0 +1,46 @@
+id: universal_database_team
+name: Universal Database Administration Team
+description: 'Multi-database administration team supporting PostgreSQL, MySQL, SQLite, and other SQL databases'
+config:
+  max_turns: 50
+
+# Tools configuration
+tools:
+  # Universal SQL Database Tool - PostgreSQL Example
+  - id: my_database_tool
+    name: Database
+    description: "Execute SQL queries against PostgreSQL database"
+    module: gnosari.tools.builtin.sql_query
+    class: SQLQueryTool
+    args:
+      database_url: "${DB_URL:mysql+pymysql://username:password@database:3306/app_db}"
+      enable_unsafe_operations: true
+
+  # File Operations for reports and documentation
+  - name: Database Reports
+    id: database_file_ops
+    description: "Manage database reports, documentation, and query results"
+    module: gnosari.tools.builtin.file_operations
+    class: FileOperationsTool
+    args:
+      base_directory: "./database_reports"
+      allowed_extensions: [".txt", ".csv", ".json", ".md", ".sql", ".html"]
+      max_file_size: 10485760  # 10MB
+
+agents:
+  # Database Administrator
+  - id: universal_dba
+    name: Universal Database Administrator
+    description: "Multi-database administrator supporting PostgreSQL, MySQL, SQLite, and other SQL databases"
+    orchestrator: true
+    instructions: >
+      Respond to user messages and use database tool if necessary.
+#      Tables Context:
+#       - Add context to guide the agent
+    model: gpt-5
+    temperature: 1
+    tools:
+      - my_database_tool
+      - file_ops
+
+#  Add more agents here to keep instructions short and create more specialized agents

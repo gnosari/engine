@@ -483,7 +483,7 @@ Use environment variables to create reusable agent configurations that can be cu
 - [Handoffs](coordination/handoffs) - Learn about control transfer mechanisms
 - [Delegation](coordination/delegation) - Understand task assignment and response handling with delegation configuration
 - [Tools](tools/intro) - Explore available tools for agents
-- [Knowledge](knowledge) - Understand knowledge base integration
+- [Knowledge Bases](knowledge-bases/intro) - Understand knowledge base integration
 - [Quickstart](quickstart) - Get started with your first team
 
 ## Next Steps
@@ -494,5 +494,5 @@ Now that you understand agents, learn how to:
 - [Use handoffs](coordination/handoffs) for control transfer
 - [Implement delegation](coordination/delegation) for task assignment
 - [Add tools](tools/intro) to enhance agent capabilities
-- [Set up knowledge bases](knowledge) for information access
+- [Set up knowledge bases](knowledge-bases/intro) for information access
 - [Create your first team](quickstart) with the quickstart guide

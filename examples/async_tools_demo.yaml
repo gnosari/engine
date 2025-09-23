@@ -1,0 +1,100 @@
+name: "Async Tools Demo Team"
+id: "async_tools_demo_team"
+description: "Demonstration of async tool execution capabilities with both sync and async modes"
+
+config:
+  max_turns: 10
+
+tools:
+  - name: "File Manager"
+    id: "file_tool_async"
+    mode: "async"
+    description: "Manages files asynchronously via queue system"
+    module: "gnosari.tools.builtin.file_operations"
+    class: "FileOperationsTool"
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".py"]
+  
+  - name: "File Manager Sync"
+    id: "file_tool_sync"
+    mode: "sync"
+    description: "Manages files synchronously (immediate execution)"
+    module: "gnosari.tools.builtin.file_operations"
+    class: "FileOperationsTool"
+    args:
+      base_directory: "./workspace"
+      allowed_extensions: [".txt", ".json", ".md", ".py"]
+  
+  - name: "API Request Tool"
+    id: "api_tool_async"
+    mode: "async"
+    priority: 3
+    description: "Makes HTTP requests asynchronously with high priority"
+    module: "gnosari.tools.builtin.api_request"
+    class: "APIRequestTool"
+  
+  - name: "Delegation Tool"
+    id: "delegate_tool_async"
+    mode: "async"
+    priority: 2
+    description: "Delegates tasks to other agents asynchronously"
+    module: "gnosari.tools.builtin.delegation"
+    class: "DelegateAgentTool"
+
+agents:
+  - name: "Async Task Manager"
+    id: "async_manager"
+    instructions: |
+      You are the Async Task Manager. Your role is to demonstrate the async execution capabilities 
+      of the Gnosari framework. You can execute tools in both sync and async modes:
+      
+      1. Use file_tool_async for file operations that should run in the background
+      2. Use file_tool_sync for immediate file operations
+      3. Use api_tool_async for HTTP requests that can be queued
+      4. Use delegate_tool_async to delegate tasks to other agents asynchronously
+      
+      When using async tools, explain to the user that the task has been queued and will be 
+      processed by workers in the background. For sync tools, the results are immediate.
+      
+      Always demonstrate the difference between sync and async execution modes.
+    orchestrator: true
+    model: "gpt-4o"
+    temperature: 0.3
+    tools: 
+      - "file_tool_async"
+      - "file_tool_sync" 
+      - "api_tool_async"
+      - "delegate_tool_async"
+  
+  - name: "File Processor"
+    id: "file_processor"
+    instructions: |
+      You are a specialized file processing agent. You handle file operations efficiently:
+      
+      1. Read and analyze file contents
+      2. Create and organize files
+      3. Process text and data files
+      4. Generate reports from file data
+      
+      You work with the Async Task Manager to handle file-related requests.
+    model: "gpt-4o-mini"
+    temperature: 0.1
+    tools:
+      - "file_tool_sync"
+  
+  - name: "API Specialist"
+    id: "api_specialist"
+    instructions: |
+      You are an API integration specialist. You handle:
+      
+      1. HTTP requests to external services
+      2. Data fetching and processing
+      3. API response analysis
+      4. Integration with external systems
+      
+      You can work with both sync and async API requests depending on the urgency.
+    model: "gpt-4o-mini"
+    temperature: 0.2
+    tools:
+      - "api_tool_async"

@@ -1,8 +1,15 @@
-"""Schema definitions for team agents."""
+"""
+Shared schemas and base classes for the Gnosari framework.
 
-from typing import Dict, List, Optional, Any, Literal
+This package contains comprehensive schema definitions for all aspects
+of the Gnosari AI Teams system, organized by domain.
+"""
+
+from .base import BaseIOSchema, BaseToolConfig, BaseTool
+
+# Legacy schemas for backward compatibility
+from typing import Dict, List, Optional, Any
 from pydantic import Field, field_validator
-from .base import BaseIOSchema
 
 
 class ActionSchema(BaseIOSchema):
@@ -67,10 +74,94 @@ class TeamAgentOutputSchema(BaseIOSchema):
     agent_name: Optional[str] = Field(default=None, description="Name of the agent generating this response")
 
 
+# Import domain-specific schemas
+from .agent import (
+    AgentCreateRequest, AgentResponse, AgentExecutionRequest, 
+    AgentExecutionResponse, AgentHandoffRequest, AgentStatus,
+    AgentMetrics, AgentConfigUpdate
+)
+
+from .team import (
+    KnowledgeBaseConfig, ToolConfig, TeamCreateRequest, TeamResponse,
+    TeamExecutionRequest, TeamExecutionResponse, TeamStatus, 
+    TeamMetrics, TeamConfigUpdate, HandoffEvent, ExecutionEvent
+)
+
+from .tool import (
+    ToolDefinition, ToolExecutionRequest, ToolExecutionResponse,
+    ToolRegistrationRequest, ToolInfo, MCPServerConfig, MCPToolInfo,
+    ToolUsageMetrics, ToolRegistry, ToolSearchRequest, ToolSearchResponse,
+    BulkToolExecutionRequest, BulkToolExecutionResponse
+)
+
+from .config import (
+    LogLevel, ProviderType, ConnectionType, GlobalConfig, ProviderConfig,
+    KnowledgeConfig, ToolConfigSchema, AgentConfigSchema, TeamConfigSchema,
+    ConfigValidationResult, ConfigUpdateRequest, ConfigBackup, ConfigMigration
+)
+
 __all__ = [
+    # Base classes
     "BaseIOSchema",
-    "ActionSchema", 
+    "BaseToolConfig", 
+    "BaseTool",
+    
+    # Legacy schemas (backward compatibility)
+    "ActionSchema",
     "NextStepSchema",
     "TeamAgentInputSchema",
-    "TeamAgentOutputSchema"
+    "TeamAgentOutputSchema",
+    
+    # Agent schemas
+    "AgentCreateRequest",
+    "AgentResponse", 
+    "AgentExecutionRequest",
+    "AgentExecutionResponse",
+    "AgentHandoffRequest",
+    "AgentStatus",
+    "AgentMetrics",
+    "AgentConfigUpdate",
+    
+    # Team schemas
+    "KnowledgeBaseConfig",
+    "ToolConfig", 
+    "TeamCreateRequest",
+    "TeamResponse",
+    "TeamExecutionRequest",
+    "TeamExecutionResponse", 
+    "TeamStatus",
+    "TeamMetrics",
+    "TeamConfigUpdate",
+    "HandoffEvent",
+    "ExecutionEvent",
+    
+    # Tool schemas
+    "ToolDefinition",
+    "ToolExecutionRequest",
+    "ToolExecutionResponse",
+    "ToolRegistrationRequest",
+    "ToolInfo",
+    "MCPServerConfig",
+    "MCPToolInfo", 
+    "ToolUsageMetrics",
+    "ToolRegistry",
+    "ToolSearchRequest",
+    "ToolSearchResponse",
+    "BulkToolExecutionRequest",
+    "BulkToolExecutionResponse",
+    
+    # Config schemas
+    "LogLevel",
+    "ProviderType",
+    "ConnectionType", 
+    "GlobalConfig",
+    "ProviderConfig",
+    "KnowledgeConfig",
+    "ToolConfigSchema",
+    "AgentConfigSchema", 
+    "TeamConfigSchema",
+    "ConfigValidationResult",
+    "ConfigUpdateRequest",
+    "ConfigBackup",
+    "ConfigMigration"
 ]

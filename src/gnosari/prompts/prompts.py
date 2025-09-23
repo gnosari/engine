@@ -27,7 +27,7 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
     """
     # Load tool definitions if tool_manager is provided
     if tool_manager and team_config and 'tools' in team_config:
-        tool_manager.load_tools(team_config)
+        tool_manager.load_tools_from_config(team_config)
     # Get available agents for delegation (just names)
     available_agents = []
     
@@ -42,7 +42,6 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
     has_handoffs = agent_config and 'can_transfer_to' in agent_config and agent_config['can_transfer_to']
     
     background = [
-        f"You are {name}, an autonomous agent.",
         "",
         instructions,
         "",
@@ -113,9 +112,7 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
             background.append("To query these knowledge bases, use the knowledge_query tool with the exact knowledge base name.")
             background.append("")
     
-    # Inject tools for this agent first
-    if agent_tools and tool_manager:
-        tool_manager.inject_tools_for_agent(name, agent_tools)
+    # Tools are already loaded from config in build_team
     
     # Get tool information and add to background
     tool_sections = get_tools_definition(agent_tools, tool_manager)
@@ -124,8 +121,7 @@ def build_orchestrator_system_prompt(name: str, instructions: str, team_config: 
     steps = []
     
     output_instructions = [
-        "Respond naturally to the user's request. If you need to delegate tasks to other agents, use the available tools.",
-        "You can use tools to delegate tasks to other agents when needed."
+        'Use tools whenver you deem necessary.'
     ]
     
     return {
@@ -219,9 +215,7 @@ def build_specialized_agent_system_prompt(name: str, instructions: str, agent_to
             background.append("Do not provide generic answers - always search your knowledge first.")
             background.append("")
     
-    # Inject tools for this agent first
-    if agent_tools and tool_manager:
-        tool_manager.inject_tools_for_agent(name, agent_tools)
+    # Tools are already loaded from config in build_team
     
     # Get tool information and add to background
     tool_sections = get_tools_definition(agent_tools, tool_manager)

@@ -542,7 +542,7 @@ Now that you've created your first team, explore more advanced features:
 - 🤖 [Agents](agents) - Learn about agent configuration and instructions
 - 👥 [Teams](teams) - Understand team structure and coordination patterns
 - 🎭 [Orchestration](coordination/orchestration) - Learn about agent coordination and workflow management
-- 📚 [Knowledge Bases](knowledge) - Set up knowledge bases for RAG capabilities
+- 📚 [Knowledge Bases](knowledge-bases/intro) - Set up knowledge bases for RAG capabilities
 - 🛠️ [Tools Overview](tools/intro) - Learn about all available tools
 - 📝 [Examples](examples) - Real-world use cases
 - 🔧 [API Reference](api) - Complete API documentation

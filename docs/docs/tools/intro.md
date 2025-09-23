@@ -202,7 +202,7 @@ Database tools like `mysql_query` use connection pooling by default. Configure `
 - [Agents](../agents) - Learn how to configure agents with tools
 - [Teams](../teams) - Understand team structure and tool assignment
 - [Orchestration](../coordination/orchestration) - Learn about agent coordination with tools
-- [Knowledge Bases](../knowledge) - Set up knowledge bases for agents
+- [Knowledge Bases](../knowledge-bases/intro) - Set up knowledge bases for agents
 - [Quickstart](../quickstart) - Create your first team with tools
 
 ## Next Steps

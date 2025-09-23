@@ -27,6 +27,9 @@ const config: Config = {
 
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
+    markdown: {
+        mermaid: true,
+    },
 
     // Even if you don't use internationalization, you can use this field to set
     // useful metadata like html lang. For example, if your site is Chinese, you
@@ -36,6 +39,7 @@ const config: Config = {
         locales: ['en'],
     },
     themes: [
+        '@docusaurus/theme-mermaid',
         [
             require.resolve("@easyops-cn/docusaurus-search-local"),
             /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
@@ -52,7 +56,7 @@ const config: Config = {
                 // searchBarShortcutKeymap: "ctrl+shift+f", // Use Ctrl+Shift+F
 
                 // If you're using `noIndex: true`, set `forceIgnoreNoIndex` to enable local index:
-                // forceIgnoreNoIndex: true,
+                forceIgnoreNoIndex: true,
             }),
         ],
     ],
