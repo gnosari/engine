@@ -7,7 +7,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
     title: 'Gnosari AI Workforce',
     tagline: 'Build your AI Workforce with intelligent agents that work together seamlessly',
-    favicon: 'img/favicon.ico',
+    favicon: 'https://gnosari.com/assets/favicon-big.png',
 
     // Future flags, see https://docusaurus.io/docs/api/docusaurus-config#future
     future: {
@@ -27,6 +27,9 @@ const config: Config = {
 
     onBrokenLinks: 'warn',
     onBrokenMarkdownLinks: 'warn',
+    markdown: {
+        mermaid: true,
+    },
 
     // Even if you don't use internationalization, you can use this field to set
     // useful metadata like html lang. For example, if your site is Chinese, you
@@ -36,6 +39,7 @@ const config: Config = {
         locales: ['en'],
     },
     themes: [
+        '@docusaurus/theme-mermaid',
         [
             require.resolve("@easyops-cn/docusaurus-search-local"),
             /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
@@ -52,7 +56,7 @@ const config: Config = {
                 // searchBarShortcutKeymap: "ctrl+shift+f", // Use Ctrl+Shift+F
 
                 // If you're using `noIndex: true`, set `forceIgnoreNoIndex` to enable local index:
-                // forceIgnoreNoIndex: true,
+                forceIgnoreNoIndex: true,
             }),
         ],
     ],
@@ -107,7 +111,7 @@ const config: Config = {
                     label: 'Documentation',
                 },
                 {
-                    href: 'https://github.com/neomanex/gnosari-engine',
+                    href: 'https://github.com/gnosari/engine',
                     label: 'GitHub',
                     position: 'right',
                 },
@@ -120,16 +124,20 @@ const config: Config = {
                     title: 'Documentation',
                     items: [
                         {
-                            label: 'Getting Started',
-                            to: '/intro',
+                            label: 'What is Gnosari?',
+                            to: '/what-is-gnosari',
                         },
                         {
-                            label: 'API Reference',
-                            to: '/api',
+                            label: 'Quickstart',
+                            to: '/quickstart',
                         },
                         {
-                            label: 'Examples',
-                            to: '/examples',
+                            label: 'Teams',
+                            to: '/teams',
+                        },
+                        {
+                            label: 'Agents',
+                            to: '/agents',
                         },
                     ],
                 },
@@ -138,11 +146,11 @@ const config: Config = {
                     items: [
                         {
                             label: 'GitHub Discussions',
-                            href: 'https://github.com/neomanex/gnosari-engine/discussions',
+                            href: 'https://github.com/gnosari/engine/discussions',
                         },
                         {
                             label: 'Issues',
-                            href: 'https://github.com/neomanex/gnosari-engine/issues',
+                            href: 'https://github.com/gnosari/engine/issues',
                         },
                         {
                             label: 'Discord',
@@ -155,7 +163,7 @@ const config: Config = {
                     items: [
                         {
                             label: 'GitHub',
-                            href: 'https://github.com/neomanex/gnosari-engine',
+                            href: 'https://github.com/gnosari/engine',
                         },
                         {
                             label: 'Neomanex',
@@ -164,7 +172,7 @@ const config: Config = {
                     ],
                 },
             ],
-            copyright: `Copyright © ${new Date().getFullYear()} Gnosari Docs. Built with Docusaurus.`,
+            copyright: `Copyright © ${new Date().getFullYear()} Gnosari Docs.`,
         },
         prism: {
             theme: prismThemes.github,

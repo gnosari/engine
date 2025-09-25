@@ -47,28 +47,32 @@ The tool defaults to using `https://r.ai.neomanex.com` as the base URL for conte
 
 ```yaml
 tools:
-  - name: content_fetcher
+  - name: Content Fetcher
+    id: content_fetcher
+    description: "Fetch website content for analysis and processing"
     module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://api.content-service.com
       timeout: 60
-      tool_name: "content_fetcher"
-      tool_description: "Fetch website content for analysis and processing"
 ```
 
 ### Multiple Content Sources
 
 ```yaml
 tools:
-  - name: news_fetcher
+  - name: News Fetcher
+    id: news_fetcher
+    description: "Retrieve news content from news API service"
     module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
       base_url: https://news-api.example.com
       timeout: 30
 
-  - name: blog_fetcher
+  - name: Blog Content Fetcher
+    id: blog_fetcher
+    description: "Retrieve blog posts and articles from blog API"
     module: gnosari.tools.builtin.website_content
     class: WebsiteContentTool
     args:
@@ -208,8 +212,10 @@ The website content tool accepts the following configuration parameters:
 |-----------|------|---------|-------------|
 | `base_url` | string | "https://r.ai.neomanex.com" | Base URL for the content API |
 | `timeout` | int | 30 | Request timeout in seconds |
-| `tool_name` | string | "website_content" | Custom name for the tool |
-| `tool_description` | string | "Fetch the content of a given URL by querying an API" | Custom description |
+
+:::info Tool Identity
+Use the YAML `name` and `description` fields to customize how the tool appears in the UI and agent prompts. The `name` becomes the tool's display name, while `description` explains its purpose to agents.
+:::
 
 ## Per-Call Parameters
 

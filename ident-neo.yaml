@@ -1,0 +1,190 @@
+name: Neomanex Website
+id: ident-neo
+description: This is a description.
+knowledge:
+- id: ac621faa-494b-476a-8fd3-8d75c5c017ac
+  name: Neomanex Sitemap
+  description: 'Knowledge source: Neomanex Sitemap'
+  type: sitemap
+  data:
+  - http://neomanex.com/post-sitemap.xml
+  - http://neomanex.com/page-sitemap.xml
+  - http://neomanex.com/category-sitemap.xml
+  - http://neomanex.com/author-sitemap.xml
+agents:
+- name: Neomanex Website
+  instructions: 'You are the front facing customer support for Neomanex Website, a
+    company that specializes in building AI products and agents and integrating AI
+    Agents in companies.
+
+
+    Respond to user messages based on your injected knowledge.'
+  model: gpt-4o-mini
+  temperature: 1
+  knowledge:
+  - Neomanex Sitemap
+- name: Coordinator Agent
+  instructions: You are the coordinator of the front facing customer support of Neomanex
+    Company, a company that specializes in integrating AI into core company processes
+    / workflows. Use the correct agents to fulfill user messages.
+  model: gpt-4o-mini
+  temperature: 1
+  orchestrator: true
+  delegation:
+  - agent: Neomanex Website
+    instructions: Use Neomanex Website agent to respond to any Neomanex questions.
+  can_transfer_to:
+  - agent: Refund Agent
+    instructions: Use the refund agent to fulfill refund requests.
+- name: Refund Agent
+  instructions: "You are Handling Refunds Requests for Neomanex Company. \n\nReview\
+    \ the refund request and respond with a acknowledged message."
+  model: gpt-4o-mini
+  temperature: 1
+- name: Documentation Specialist
+  instructions: "# LLM.md - Complete Team YAML Configuration Guide\n\n## Complete\
+    \ YAML Structure\n\n```yaml\n# MANDATORY: Team identification\nname: \"Team Name\"\
+    \                    # MANDATORY\ndescription: \"Team description\"       # OPTIONAL\n\
+    \n# OPTIONAL: Team configuration settings\nconfig:\n  max_turns: 100         \
+    \           # Max conversation turns (default: 100)\n  timeout: 300          \
+    \             # Execution timeout in seconds (default: 300)\n\n# OPTIONAL: Knowledge\
+    \ bases (auto-adds knowledge_query tool to agents)\nknowledge:\n  - id: \"kb_unique_id\"\
+    \              # MANDATORY: Unique identifier for referencing\n    name: \"Knowledge\
+    \ Base Name\"      # MANDATORY: Display name\n    type: \"website\"          \
+    \        # MANDATORY: website|youtube|pdf|text|csv|json|directory\n    data: [\"\
+    source1\", \"source2\"]    # MANDATORY: Data sources array\n    config:      \
+    \                    # OPTIONAL: Embedchain configuration\n      llm:        \
+    \                   # LLM provider settings\n        provider: \"openai\"    \
+    \       # openai|anthropic|google|deepseek|azure_openai\n        config:\n   \
+    \       model: \"gpt-4o\"\n          temperature: 0.1\n          max_tokens: 1000\n\
+    \      embedder:                      # Embedding model settings\n        provider:\
+    \ \"openai\"           # openai|huggingface|cohere|google\n        config:\n \
+    \         model: \"text-embedding-3-small\"\n          dimensions: 1536\n    \
+    \  chunker:                       # Document chunking settings\n        chunk_size:\
+    \ 1000\n        chunk_overlap: 200\n        length_function: \"len\"\n      db:\
+    \                            # Vector database settings\n        provider: \"\
+    chroma\"           # chroma|pinecone|weaviate|qdrant\n        config:\n      \
+    \    collection_name: \"kb_name\"\n          persist_directory: \"./data\"\n\n\
+    # OPTIONAL: Tools (built-in + MCP servers)\ntools:\n  # Built-in tool example\n\
+    \  - name: \"tool_name\"               # MANDATORY: Tool reference name\n    id:\
+    \ \"tool_id\"                   # OPTIONAL: Unique identifier\n    module: \"\
+    gnosari.tools.builtin.api_request\"  # MANDATORY: Module path\n    class: \"APIRequestTool\"\
+    \         # MANDATORY: Class name\n    args:                           # OPTIONAL:\
+    \ Tool-specific args\n      base_url: \"${API_URL:https://api.example.com}\"\n\
+    \      timeout: ${TIMEOUT:30}\n  \n  # MCP server examples\n  - name: \"MCP Server\
+    \ Name\"         # MANDATORY: Display name\n    id: \"mcp_server_id\"        \
+    \     # OPTIONAL: Unique identifier\n    url: \"${MCP_URL}\"               # MANDATORY\
+    \ for HTTP/SSE\n    command: \"/path/to/server\"      # MANDATORY for STDIO\n\
+    \    connection_type: \"streamable_http\"  # streamable_http|sse|stdio\n    headers:\
+    \                        # OPTIONAL: For HTTP/SSE\n      Authorization: \"Bearer\
+    \ ${TOKEN}\"\n    args: [\"--arg1\", \"--arg2\"]     # OPTIONAL: For STDIO\n \
+    \   timeout: 30                     # OPTIONAL: Connection timeout\n\n# MANDATORY:\
+    \ Agents array (at least one agent required)\nagents:\n  - name: \"AgentName\"\
+    \               # MANDATORY: Agent name\n    instructions: \"Agent behavior\"\
+    \   # MANDATORY: Agent instructions/prompt\n    model: \"gpt-4o\"            \
+    \     # OPTIONAL: gpt-5|gpt-4o|gpt-4o-mini (default: gpt-4o)\n    temperature:\
+    \ 0.7                # OPTIONAL: 0.0-1.0 (default: 0.7)\n    reasoning_effort:\
+    \ \"medium\"       # OPTIONAL: low|medium|high (default: medium)\n    orchestrator:\
+    \ true              # OPTIONAL: Makes agent the entry point\n    tools: [\"tool_id1\"\
+    , \"tool_id2\"] # OPTIONAL: Tool references by name/id\n    knowledge: [\"kb_id1\"\
+    , \"kb_id2\"] # OPTIONAL: Knowledge base references by id\n    delegation:   \
+    \                  # OPTIONAL: Task delegation configuration\n      - agent: \"\
+    OtherAgentName\"     # Target agent name\n        instructions: \"When/how to\
+    \ use this agent\"\n```\n\n## Core Concepts\n\n### Models & Settings\n- **model**:\
+    \ gpt-5, gpt-4o, gpt-4o-mini\n- **temperature**: 0.0-1.0 (creativity level)\n\
+    - **reasoning_effort**: low/medium/high (thinking depth)\n\n### Agent Roles\n\
+    - **orchestrator: true**: Entry point, receives initial user request\n- **delegation**:\
+    \ Two-way task assignment (gets response back)\n- **tools**: Array of tool names/ids\
+    \ the agent can use\n- **knowledge**: Array of knowledge base ids the agent can\
+    \ access\n\n### Tool Types & Parameters\n\n**Built-in Tools:**\n\n#### api_request\
+    \ - HTTP API calls\n```yaml\nmodule: gnosari.tools.builtin.api_request\nclass:\
+    \ APIRequestTool\nargs:\n  base_url: \"https://api.example.com\"  # Base URL for\
+    \ requests\n  base_headers: {}                      # Default headers (dict)\n\
+    \  timeout: 30                           # Request timeout (seconds)\n  verify_ssl:\
+    \ true                      # SSL verification\n  tool_name: \"api_request\" \
+    \             # Custom tool name\n  tool_description: \"Make HTTP requests\" #\
+    \ Custom description\n```\n\n#### sql_query - Universal SQL via SQLAlchemy  \n\
+    ```yaml\nmodule: gnosari.tools.builtin.sql_query\nclass: SQLQueryTool\nargs:\n\
+    \  database_url: \"postgresql://user:pass@host:port/db\"  # Required\n  pool_size:\
+    \ 5                          # Connection pool size\n  max_overflow: 10      \
+    \                # Max overflow connections\n  pool_timeout: 30              \
+    \        # Pool timeout (seconds)\n  pool_recycle: 3600                    # Connection\
+    \ recycle (seconds)\n  query_timeout: 30                     # Query timeout (seconds)\n\
+    \  echo: false                           # Echo SQL statements\n  enable_unsafe_operations:\
+    \ false       # Allow DROP/TRUNCATE\n  allowed_schemas: null                 #\
+    \ List of allowed schemas\n  blocked_keywords: []                  # Additional\
+    \ blocked keywords\n  tool_name: \"sql_query\"                # Custom tool name\n\
+    \  tool_description: \"Execute SQL queries\" # Custom description\n```\n\n####\
+    \ mysql_query - MySQL specific\n```yaml\nmodule: gnosari.tools.builtin.mysql_query\n\
+    class: MySQLQueryTool\nargs:\n  host: \"localhost\"                     # MySQL\
+    \ server host\n  port: 3306                           # MySQL server port\n  database:\
+    \ \"\"                         # Database name\n  username: \"\"             \
+    \            # Database username\n  password: \"\"                         # Database\
+    \ password\n  charset: \"utf8mb4\"                   # Character set\n  pool_size:\
+    \ 5                         # Connection pool size\n  max_overflow: 10       \
+    \              # Max overflow connections\n  pool_timeout: 30                \
+    \     # Pool timeout (seconds)\n  pool_recycle: 3600                   # Connection\
+    \ recycle (seconds)\n  query_timeout: 30                    # Query timeout (seconds)\n\
+    \  echo: false                          # Echo SQL statements\n```\n\n#### website_content\
+    \ - Web content fetch\n```yaml\nmodule: gnosari.tools.builtin.website_content\n\
+    class: WebsiteContentTool\nargs:\n  base_url: \"https://r.ai.neomanex.com\" #\
+    \ API base URL\n  timeout: 30                           # Request timeout (seconds)\n\
+    \  tool_name: \"website_content\"          # Custom tool name\n  tool_description:\
+    \ \"Fetch URL content\"  # Custom description\n```\n\n#### web_search - Real-time\
+    \ web search\n```yaml\nmodule: agents\nclass: WebSearchTool\nargs:\n  search_context_size:\
+    \ \"medium\"         # small|medium|large\n  user_location: \"US\"           \
+    \        # Geographic location\n  filters: []                           # recent|authoritative|news|academic\n\
+    ```\n\n#### file_operations - File management\n```yaml\nmodule: gnosari.tools.builtin.file_operations\n\
+    class: FileOperationsTool\nargs:\n  base_directory: \"./workspace\"         #\
+    \ Base directory path\n  allowed_extensions: null              # List of allowed\
+    \ extensions\n  max_file_size: 10485760               # Max file size (bytes)\n\
+    \  tool_name: \"file_operations\"          # Custom tool name\n  tool_description:\
+    \ \"Manage files\"       # Custom description\n```\n\n**MCP Servers:**\n```yaml\n\
+    # HTTP/SSE Server\nurl: \"https://api.example.com/mcp\"      # Required for HTTP/SSE\n\
+    connection_type: \"streamable_http\"      # streamable_http|sse|stdio\nheaders:\
+    \ {}                             # HTTP headers\ntimeout: 30                 \
+    \            # Connection timeout\nsse_read_timeout: 30                    # SSE\
+    \ read timeout\nclient_session_timeout_seconds: 30      # Session timeout\nterminate_on_close:\
+    \ true                # Terminate on close\n\n# STDIO Server\ncommand: \"/path/to/server\"\
+    \              # Required for STDIO\nconnection_type: \"stdio\"              \
+    \  # Must be stdio\nargs: []                                # Command arguments\n\
+    client_session_timeout_seconds: 30      # Session timeout\n```\n\n### Knowledge\
+    \ Base Types\n- **website**: Web crawling and indexing\n- **youtube**: Video transcript\
+    \ extraction\n- **pdf**: Document processing\n- **text**: Direct text content\n\
+    - **csv/json**: Structured data\n- **directory**: Local file processing\n\n##\
+    \ Minimal Valid Configuration\n\n```yaml\nname: \"Minimal Team\"\nagents:\n  -\
+    \ name: \"Assistant\"\n    instructions: \"Help users with their requests\"\n\
+    ```\n\n## Common Patterns\n\n### Multi-Agent with Orchestration\n```yaml\nname:\
+    \ \"Support Team\"\nagents:\n  - name: \"Manager\"\n    instructions: \"Coordinate\
+    \ support requests\"\n    orchestrator: true\n    delegation:\n      - agent:\
+    \ \"Technical\"\n        instructions: \"Use for technical issues\"\n      - agent:\
+    \ \"Billing\"\n        instructions: \"Use for billing questions\"\n  \n  - name:\
+    \ \"Technical\"\n    instructions: \"Resolve technical problems\"\n  \n  - name:\
+    \ \"Billing\"\n    instructions: \"Handle billing inquiries\"\n```\n\n### Agent\
+    \ with Tools & Knowledge\n```yaml\nname: \"Research Team\"\nknowledge:\n  - id:\
+    \ \"docs\"\n    name: \"Documentation\"\n    type: \"website\"\n    data: [\"\
+    https://docs.example.com\"]\n\ntools:\n  - name: \"api\"\n    module: \"gnosari.tools.builtin.api_request\"\
+    \n    class: \"APIRequestTool\"\n\nagents:\n  - name: \"Researcher\"\n    instructions:\
+    \ \"Research and analyze information\"\n    tools: [\"api\", \"knowledge_query\"\
+    ]\n    knowledge: [\"docs\"]\n```\n\n### Environment Variables\nUse `${VAR_NAME}`\
+    \ or `${VAR_NAME:default}` anywhere in YAML:\n\n```yaml\nname: \"${TEAM_NAME:My\
+    \ Team}\"\nagents:\n  - name: \"${AGENT_NAME:Assistant}\"\n    model: \"${MODEL:gpt-4o}\"\
+    \n    temperature: ${TEMP:0.7}\n    instructions: \"Work for ${COMPANY:our company}\"\
+    \n```\n\n## Validation Rules\n\n### Required Fields\n- Team must have `name`\n\
+    - Must have at least one agent\n- Each agent must have `name` and `instructions`\n\
+    - Knowledge bases need `id`, `name`, `type`, `data`\n- Tools need `name` and either:\n\
+    \  - `module` + `class` (built-in)\n  - `url` + `connection_type` (MCP HTTP/SSE)\n\
+    \  - `command` + `connection_type: stdio` (MCP STDIO)\n\n### Constraints\n- Agent/tool/knowledge\
+    \ names must be unique within team\n- Avoid circular delegation (A→B→A)\n- Knowledge\
+    \ bases auto-add `knowledge_query` tool\n- First orchestrator agent receives user\
+    \ requests\n- Without orchestrator, first agent is entry point\n\n## Quick Reference\n\
+    \n**Model Selection**:\n- gpt-5: Latest, most capable\n- gpt-4o: High quality,\
+    \ complex tasks\n- gpt-4o-mini: Cost-effective, simpler tasks\n\n**Temperature\
+    \ Guide**:\n- 0.1-0.3: Factual, consistent (technical, data)\n- 0.4-0.6: Balanced\
+    \ (general assistance)\n- 0.7-1.0: Creative, varied (writing, brainstorming)\n\
+    \n**Reasoning Effort**:\n- low: Fast responses, simple analysis\n- medium: Balanced\
+    \ speed/thoroughness\n- high: Deep analysis, complex problems\n\n**Connection\
+    \ Types**:\n- streamable_http: Modern HTTP MCP servers\n- sse: Server-sent events\
+    \ MCP servers\n- stdio: Local process MCP servers"
+  model: gpt-5
+  temperature: 1

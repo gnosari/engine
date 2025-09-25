@@ -1,0 +1,5 @@
+{
+  "label": "Queues & Async Processing",
+  "position": 7,
+  "description": "Asynchronous job processing with Celery queues, worker management, and async tool execution"
+}

@@ -3,6 +3,7 @@
 from typing import Dict, List, Optional, Any, Literal
 from pydantic import Field, field_validator
 from .base import BaseIOSchema
+from .session import SessionContext
 
 
 class ActionSchema(BaseIOSchema):
@@ -69,6 +70,7 @@ class TeamAgentOutputSchema(BaseIOSchema):
 
 __all__ = [
     "BaseIOSchema",
+    "SessionContext",
     "ActionSchema", 
     "NextStepSchema",
     "TeamAgentInputSchema",

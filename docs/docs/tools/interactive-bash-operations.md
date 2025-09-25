@@ -196,9 +196,7 @@ InteractiveBashOperationsTool(
     blocked_commands=["rm", "sudo"],        # Blacklist of blocked commands
     max_output_size=5242880,                # Max output size (5MB)
     unsafe_mode=False,                      # Disable safety checks
-    session_timeout=3600,                   # Session timeout (1 hour)
-    tool_name="interactive_bash",           # Tool name in agent config
-    tool_description="Execute interactive bash commands"
+    session_timeout=3600                    # Session timeout (1 hour)
 )
 ```
 

@@ -5,13 +5,6 @@ services:
       dockerfile: Dockerfile
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      - COHERE_API_KEY=${COHERE_API_KEY}
-      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
-      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
-      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
       - PYTHONPATH=/app
       - ENVIRONMENT=development
       - LOG_LEVEL=debug
@@ -36,3 +29,32 @@ services:
       MINIO_ROOT_USER: user # Replace with your desired username
       MINIO_ROOT_PASSWORD: password123 # Replace with your desired strong password
     command: server --console-address ":9001" /data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./protected/redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: poetry run celery -A gnosari.queue.app.celery_app flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - FLOWER_PORT=5555
+      - FLOWER_BASIC_AUTH=admin:admin
+    depends_on:
+      - redis
+    restart: unless-stopped
+    volumes:
+      - ./src:/app/src

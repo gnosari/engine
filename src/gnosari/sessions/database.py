@@ -9,6 +9,7 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 from agents.memory.session import SessionABC
 from agents.items import TResponseInputItem
+from ..schemas import SessionContext
 
 # SQLAlchemy imports for database implementation
 from sqlalchemy import (
@@ -29,19 +30,25 @@ class DatabaseSession(SessionABC):
 
     def __init__(self, 
                  session_id: str, 
-                 session_context: Optional[Dict[str, Any]] = None,
+                 session_context: Optional[SessionContext] = None,
                  database_url: Optional[str] = None,
                  create_tables: bool = True):
         """Initialize database session.
         
         Args:
             session_id: Unique identifier for the conversation
-            session_context: Dictionary containing account_id, team_id, agent_id
+            session_context: SessionContext object containing account_id (int), team_id (str), agent_id (str)
             database_url: Database URL, defaults to SQLite file
             create_tables: Whether to create tables if they don't exist
         """
         self.session_id = session_id
-        self.session_context = session_context or {}
+        self._session_context_obj = session_context
+        
+        # Convert SessionContext to dictionary for internal use
+        if session_context is not None:
+            self.session_context = session_context.model_dump(exclude_none=True)
+        else:
+            self.session_context = {}
         self._lock = asyncio.Lock()
         
         # Set default database URL if not provided
@@ -58,11 +65,7 @@ class DatabaseSession(SessionABC):
                 pool_timeout=30,  # 30 seconds timeout for getting connection from pool
                 pool_recycle=3600,  # Recycle connections every hour
                 pool_pre_ping=True,  # Validate connections before use
-                connect_args={
-                    "timeout": 30 if "sqlite" in self._database_url else None,  # SQLite connection timeout
-                    "command_timeout": 30 if "mysql" in self._database_url else None,  # MySQL timeout
-                    "server_settings": {"statement_timeout": "30s"} if "postgresql" in self._database_url else {}  # PostgreSQL timeout
-                }
+                connect_args=self._get_connect_args()
             )
             self._setup_database_schema()
             logger.info(f"Database engine initialized successfully: {self._database_url}")
@@ -88,30 +91,45 @@ class DatabaseSession(SessionABC):
         if hasattr(self, '_engine') and self._engine:
             logger.warning(f"Session {self.session_id} was not properly cleaned up - engine still active")
     
+    def _get_connect_args(self):
+        """Get database-specific connection arguments."""
+        connect_args = {}
+        
+        if "sqlite" in self._database_url:
+            connect_args["timeout"] = 30
+        elif "mysql" in self._database_url:
+            connect_args["command_timeout"] = 30
+        elif "postgresql" in self._database_url:
+            connect_args["server_settings"] = {"statement_timeout": "30s"}
+        
+        return connect_args
+    
     def _setup_database_schema(self):
         """Set up database schema using existing python-api models structure."""
         self._metadata = MetaData()
         
-        # Sessions table matching python-api Session model
+        # Sessions table - compatible with python-api schema
         self._sessions = Table(
             "sessions",
             self._metadata,
             Column("session_id", String, primary_key=True),
-            Column("account_id", Integer, ForeignKey("account.id"), nullable=True),  # Nullable to support engine-only usage
-            Column("team_id", Integer, ForeignKey("teams.id"), nullable=True),
-            Column("agent_id", Integer, ForeignKey("agent.id"), nullable=True),
+            Column("account_id", Integer, nullable=True),  # Account ID from YAML or external source
+            Column("team_id", Integer, nullable=True),     # Integer team ID (references teams table in python-api)
+            Column("agent_id", Integer, nullable=True),    # Integer agent ID (references agents table in python-api)
+            Column("team_identifier", String, nullable=True),   # Team identifier from YAML 'id' field 
+            Column("agent_identifier", String, nullable=True),  # Agent identifier from YAML agents[].id field
             Column("created_at", DateTime, nullable=False, server_default=sql_text("CURRENT_TIMESTAMP")),  # From TimestampMixin
             Column("updated_at", DateTime, nullable=False, server_default=sql_text("CURRENT_TIMESTAMP"), onupdate=sql_text("CURRENT_TIMESTAMP")),  # From TimestampMixin
         )
 
-        # Messages table matching python-api SessionMessage model  
+        # Messages table - engine-compatible  
         self._messages = Table(
             "session_messages",  # Correct table name from python-api
             self._metadata,
             Column("id", Integer, primary_key=True, autoincrement=True),
             Column("session_id", String, ForeignKey("sessions.session_id", ondelete="CASCADE"), nullable=False),
             Column("message_data", Text, nullable=False),
-            Column("account_id", Integer, ForeignKey("account.id"), nullable=True),  # Nullable to support engine-only usage
+            Column("account_id", Integer, nullable=True),  # Account ID from session context
             Column("created_at", DateTime, nullable=False, server_default=sql_text("CURRENT_TIMESTAMP")),  # From TimestampMixin
             Column("updated_at", DateTime, nullable=False, server_default=sql_text("CURRENT_TIMESTAMP"), onupdate=sql_text("CURRENT_TIMESTAMP")),  # From TimestampMixin
             Index("idx_session_messages_session_time", "session_id", "created_at"),  # Match python-api index name
@@ -128,23 +146,41 @@ class DatabaseSession(SessionABC):
     
     async def _ensure_tables(self) -> None:
         """Ensure tables are created before any database operations."""
+        logger.debug(f"_ensure_tables called for session {self.session_id}, database_available: {self._database_available}, create_tables: {self._create_tables}")
+        
         if not self._database_available:
+            logger.error(f"Database is not available for session {self.session_id}")
             raise RuntimeError("Database is not available")
             
         if self._create_tables:
             try:
+                logger.info(f"Creating database tables for session {self.session_id}")
                 async with self._engine.begin() as conn:
                     await conn.run_sync(self._metadata.create_all)
                 self._create_tables = False  # Only create once
-                logger.debug(f"Database tables created successfully for session {self.session_id}")
+                logger.info(f"Database tables created successfully for session {self.session_id}")
             except Exception as e:
                 logger.error(f"Failed to create database tables: {e}")
                 self._database_available = False
                 raise
+        else:
+            logger.debug(f"Tables already created for session {self.session_id}")
     
     async def _serialize_item(self, item: TResponseInputItem) -> str:
-        """Serialize an item to JSON string."""
-        return json.dumps(item, separators=(",", ":"))
+        """Serialize an item to JSON string, preserving reasoning items."""
+        try:
+            # First try to use the item's built-in serialization if available
+            if hasattr(item, 'model_dump') or hasattr(item, 'dict'):
+                if hasattr(item, 'model_dump'):
+                    return json.dumps(item.model_dump(), separators=(",", ":"))
+                else:
+                    return json.dumps(item.dict(), separators=(",", ":"))
+            else:
+                # Fall back to standard JSON serialization
+                return json.dumps(item, separators=(",", ":"))
+        except (TypeError, AttributeError) as e:
+            logger.warning(f"Failed to serialize item properly: {e}, using string representation")
+            return json.dumps(str(item), separators=(",", ":"))
 
     async def get_items(self, limit: int | None = None) -> List[TResponseInputItem]:
         """Retrieve conversation history for this session."""
@@ -206,9 +242,19 @@ class DatabaseSession(SessionABC):
         try:
             await asyncio.wait_for(self._ensure_tables(), timeout=10.0)
             
-            # Get account_id from session context (optional)
+            # Get account_id and IDs from session context (optional)
             account_id = self.session_context.get("account_id")
+            team_id_int = self.session_context.get("team_id")  # Integer ID
+            agent_id_int = self.session_context.get("agent_id")  # Integer ID
+            team_identifier = self.session_context.get("team_identifier")  # String identifier
+            agent_identifier = self.session_context.get("agent_identifier")  # String identifier
             current_time = datetime.now()
+            
+            # Log session context for debugging
+            logger.info(f"Session context for {self.session_id}: {self.session_context}")
+            logger.info(f"Extracted values - account_id: {account_id}, "
+                       f"team_id: {team_id_int}, agent_id: {agent_id_int}, "
+                       f"team_identifier: {team_identifier}, agent_identifier: {agent_identifier}")
             
             payload = [
                 {
@@ -235,12 +281,22 @@ class DatabaseSession(SessionABC):
                             session_data = {
                                 "session_id": self.session_id,
                                 "account_id": account_id,  # Optional - can be None
-                                "team_id": self.session_context.get("team_id"),
-                                "agent_id": self.session_context.get("agent_id"),
+                                "team_id": team_id_int,  # Integer ID for python-api compatibility
+                                "agent_id": agent_id_int,  # Integer ID for python-api compatibility
+                                "team_identifier": team_identifier,  # String identifier from YAML
+                                "agent_identifier": agent_identifier,  # String identifier from YAML
                                 "created_at": current_time,
                                 "updated_at": current_time,
                             }
-                            await sess.execute(insert(self._sessions).values(session_data))
+                            logger.info(f"Creating new session with data: {session_data}")
+                            
+                            try:
+                                await sess.execute(insert(self._sessions).values(session_data))
+                                logger.info(f"Successfully created session {self.session_id}")
+                            except Exception as e:
+                                logger.error(f"Failed to create session {self.session_id}: {e}")
+                                logger.error(f"Session data that failed: {session_data}")
+                                raise
 
                         # Insert messages in bulk
                         await sess.execute(insert(self._messages), payload)

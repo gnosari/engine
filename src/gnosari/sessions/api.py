@@ -8,6 +8,7 @@ import logging
 from typing import List, Optional, Dict, Any
 from agents.memory.session import SessionABC
 from agents.items import TResponseInputItem
+from ..schemas import SessionContext
 
 logger = logging.getLogger(__name__)
 
@@ -17,25 +18,31 @@ class ApiSession(SessionABC):
 
     def __init__(self, 
                  session_id: str, 
-                 session_context: Optional[Dict[str, Any]] = None,
+                 session_context: Optional[SessionContext] = None,
                  api_base_url: Optional[str] = None,
                  api_key: Optional[str] = None):
         """Initialize API session.
         
         Args:
             session_id: Unique identifier for the conversation
-            session_context: Dictionary containing account_id, team_id, agent_id
+            session_context: SessionContext object containing account_id, team_id, agent_id
             api_base_url: Base URL for the API
             api_key: API authentication key
         """
         self.session_id = session_id
-        self.session_context = session_context or {}
+        self._session_context_obj = session_context
+        
+        # Convert SessionContext to dictionary for internal use
+        if session_context is not None:
+            self.session_context = session_context.model_dump(exclude_none=True)
+        else:
+            self.session_context = {}
         
         # Validate required parameters
         if not api_base_url or not api_key:
             raise ValueError("api_base_url and api_key are required for ApiSession")
         
-        if not session_context or not session_context.get("account_id"):
+        if not session_context or not self.session_context.get("account_id"):
             raise ValueError("account_id in session_context is required for ApiSession")
         
         try:
@@ -59,8 +66,9 @@ class ApiSession(SessionABC):
     async def _get_auth_headers(self) -> dict:
         """Get authentication headers for API requests."""
         return {
-            "Authorization": f"Bearer {self._api_key}",
-            "Content-Type": "application/json"
+            "X-Auth-Token": self._api_key,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
         }
 
     async def _ensure_session_exists(self) -> None:
@@ -82,8 +90,8 @@ class ApiSession(SessionABC):
             # Create session if it doesn't exist
             session_data = {
                 "session_id": self.session_id,
-                "team_id": self.session_context.get("team_id"),
-                "agent_id": self.session_context.get("agent_id"),
+                "team_identifier": self.session_context.get("team_id"),
+                "agent_identifier": self.session_context.get("agent_id"),
                 "messages": []
             }
             
@@ -158,7 +166,21 @@ class ApiSession(SessionABC):
                 
                 messages = []
                 for item in items:
-                    message_data = json.dumps(item, separators=(",", ":"))
+                    # Use a more robust serialization approach to preserve reasoning items
+                    try:
+                        # First try to use the item's built-in serialization if available
+                        if hasattr(item, 'model_dump') or hasattr(item, 'dict'):
+                            if hasattr(item, 'model_dump'):
+                                message_data = json.dumps(item.model_dump(), separators=(",", ":"))
+                            else:
+                                message_data = json.dumps(item.dict(), separators=(",", ":"))
+                        else:
+                            # Fall back to standard JSON serialization
+                            message_data = json.dumps(item, separators=(",", ":"))
+                    except (TypeError, AttributeError) as e:
+                        logger.warning(f"Failed to serialize item properly: {e}, using string representation")
+                        message_data = json.dumps(str(item), separators=(",", ":"))
+                    
                     messages.append({"message_data": message_data})
                 
                 async with self._get_http_session() as session:

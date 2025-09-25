@@ -434,6 +434,14 @@ poetry run gnosari --config "team.yaml" --show-prompts
 
 # View prompts with specific model/temperature settings
 poetry run gnosari --config "team.yaml" --show-prompts --model "gpt-4o" --temperature 0.5
+
+# Prompt Template Management
+poetry run gnosari prompts list                              # List available templates
+poetry run gnosari prompts view planning                     # View template with rich formatting
+poetry run gnosari prompts view planning --format markdown   # View as plain markdown
+poetry run gnosari prompts view planning variables           # Show only variables
+poetry run gnosari prompts use planning "Create feature" --feature_name "search"  # Process template
+poetry run gnosari prompts create planning "./plan.md" "New feature" --var "value"  # Create file from template
 ```
 
 ## Architecture

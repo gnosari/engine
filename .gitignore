@@ -293,3 +293,7 @@ db/*
 protected
 CLAUDE.md
 workspace
+
+.cache
+planning
+ROADMAP.md

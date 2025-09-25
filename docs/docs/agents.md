@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Agents
@@ -20,124 +20,110 @@ Agents in Gnosari AI Teams are AI-powered entities that can:
 An agent is more than just an LLM - it's a complete entity with instructions, tools, knowledge access, and the ability to collaborate with other agents.
 :::
 
-## Agent Configuration
+:::tip Team Configuration
+For team orchestration, delegation patterns, and workflow management, see the [Teams](teams) documentation.
+:::
 
-Agents are defined in the `agents` section of your team YAML configuration:
+## Advanced Agent Configuration
+
+Agents support extensive configuration options for fine-tuning behavior and performance:
 
 ```yaml
 agents:
   - name: AgentName
     instructions: "What this agent does and how it behaves"
-    model: gpt-4o
-    orchestrator: true  # Optional: for coordination agents
-    tools: ["tool_id1", "tool_id2"]  # Optional: tools this agent can use (references tool IDs)
-    knowledge: ["kb_id1", "kb_id2"]  # Optional: knowledge bases this agent can access (references knowledge base IDs)
+    model: gpt-4o                    # LLM model
+    temperature: 0.7                  # Creativity level (0.0-1.0)
+    reasoning_effort: "medium"        # Reasoning depth (low/medium/high)
+    orchestrator: true               # Optional: for coordination agents
+    tools: ["tool_id1", "tool_id2"] # Optional: tools this agent can use
+    knowledge: ["kb_id1", "kb_id2"]  # Optional: knowledge bases this agent can access
 ```
 
 :::info Environment Variables
 Agent configurations support environment variable substitution using `${VAR_NAME}` or `${VAR_NAME:default_value}` syntax. This works for all agent properties including names, instructions, models, and more. See [Environment Variables](#environment-variables) section below.
 :::
 
-## Core Agent Properties
+## Model Configuration
 
-### Name
-The unique identifier for the agent within the team:
-
-```yaml
-agents:
-  - name: ResearchSpecialist
-    # ... other properties
-```
-
-:::tip Naming Conventions
-Use descriptive names that clearly indicate the agent's role or specialization (e.g., `DataAnalyst`, `ContentWriter`, `ProjectManager`).
-:::
-
-### Instructions
-The core behavior definition for the agent. This is where you define:
-- **Role and responsibilities**
-- **How to approach tasks**
-- **Communication style**
-- **Decision-making criteria**
-- **Quality standards**
-
-```yaml
-agents:
-  - name: TechnicalWriter
-    instructions: >
-      You are a technical writer who specializes in creating clear, accurate documentation.
-      
-      Your responsibilities include:
-      - Writing technical documentation and guides
-      - Explaining complex concepts in simple terms
-      - Ensuring accuracy and completeness
-      - Following documentation best practices
-      
-      When writing:
-      - Use clear, concise language
-      - Include practical examples
-      - Structure content logically
-      - Always verify technical accuracy
-      
-      If you need clarification on technical details, ask for more information
-      rather than making assumptions.
-```
-
-:::tip Effective Instructions
-Good instructions are:
-- **Specific**: Clear about what the agent should do
-- **Comprehensive**: Cover the agent's role and responsibilities
-- **Actionable**: Provide clear guidance on how to behave
-- **Context-aware**: Include relevant constraints and considerations
-:::
-
-### Model
-The LLM model that powers the agent's intelligence:
+### Model Selection
+Choose the GPT model that best fits the agent's role:
 
 ```yaml
 agents:
   - name: CreativeWriter
-    model: gpt-4o  # OpenAI GPT-4o
+    model: gpt-5  # GPT-5 - latest model for creative tasks
     instructions: "Create engaging, creative content"
     
   - name: DataAnalyst
-    model: claude-3-5-sonnet-20241022  # Anthropic Claude
+    model: gpt-4o  # GPT-4o - strong analytical capabilities
     instructions: "Analyze data and provide insights"
     
   - name: CodeReviewer
-    model: deepseek-chat  # DeepSeek model
+    model: gpt-4o-mini  # GPT-4o Mini - cost-effective for technical tasks
     instructions: "Review code for quality and security"
 ```
 
-:::info Multi-Provider Support
-Each agent can use a different model from different providers, allowing you to leverage the strengths of various LLMs in your team.
+:::info GPT Model Options
+Choose from various GPT models based on your needs:
+- **gpt-5**: Latest model with advanced capabilities
+- **gpt-4o**: High quality for complex tasks
+- **gpt-4o-mini**: Cost-effective for simpler tasks
 :::
 
-### Orchestrator
-Marks an agent as a coordinator that can delegate tasks to other agents:
+### Temperature Settings
+Control creativity and randomness in agent responses:
 
 ```yaml
 agents:
-  - name: ProjectManager
-    instructions: "Coordinate team tasks and delegate work"
-    orchestrator: true  # This agent can delegate to others
+  - name: CreativeWriter
     model: gpt-4o
+    temperature: 0.8  # High creativity for creative writing
     
-  - name: Specialist
-    instructions: "Handle specific tasks"
+  - name: TechnicalWriter
     model: gpt-4o
-    # No orchestrator: true - this agent cannot delegate
+    temperature: 0.1  # Low creativity for consistent technical content
+    
+  - name: GeneralAssistant
+    model: gpt-4o
+    temperature: 0.5  # Balanced creativity and consistency
 ```
 
-:::info Orchestrator as Entry Point
-When running a team without specifying a particular agent, **orchestrator agents are the first to receive user requests**. If your team has multiple orchestrator agents, the first one defined in the configuration will handle the initial user input.
+:::info Temperature Guidelines
+- **Low (0.1-0.3)**: Factual, consistent responses
+- **Medium (0.4-0.6)**: Balanced creativity and consistency
+- **High (0.7-1.0)**: Creative, varied responses
+:::
+
+### Reasoning Effort
+Control the depth of reasoning for GPT models:
+
+```yaml
+agents:
+  - name: ComplexAnalyst
+    model: gpt-4o
+    reasoning_effort: "high"  # Deep reasoning for complex analysis
+    
+  - name: QuickResponder
+    model: gpt-4o-mini
+    reasoning_effort: "low"   # Fast responses for simple tasks
+    
+  - name: BalancedAgent
+    model: gpt-4o
+    reasoning_effort: "medium" # Balanced reasoning depth
+```
+
+:::info Reasoning Effort
+- **Low**: Faster responses, less thorough analysis
+- **Medium**: Balanced speed and thoroughness
+- **High**: Slower responses, more thorough analysis
 :::
 
 
-## Agent Types and Patterns
+## Advanced Agent Features
 
-### 1. Orchestrator Agents
-Coordination agents that manage workflows and delegate tasks:
+### Orchestrator Configuration
+Configure agents to coordinate team workflows:
 
 ```yaml
 agents:
@@ -149,10 +135,16 @@ agents:
       completed work.
     orchestrator: true
     model: gpt-4o
+    temperature: 0.2  # Low temperature for consistent coordination
+    reasoning_effort: "medium"
 ```
 
-### 2. Specialist Agents
-Focused agents that handle specific types of tasks:
+:::info Orchestrator as Entry Point
+When running a team without specifying a particular agent, **orchestrator agents are the first to receive user requests**. If your team has multiple orchestrator agents, the first one defined in the configuration will handle the initial user input.
+:::
+
+### Tool Assignment
+Assign specific tools to agents based on their role:
 
 ```yaml
 agents:
@@ -162,180 +154,162 @@ agents:
       Focus on statistical analysis, pattern recognition, and
       data-driven recommendations.
     model: gpt-4o
+    temperature: 0.3
+    reasoning_effort: "high"
     tools:
       - mysql_query
-      - api_request
-```
-
-### 3. Generalist Agents
-Versatile agents that can handle multiple types of tasks:
-
-```yaml
-agents:
-  - name: GeneralAssistant
-    instructions: >
-      You are a general assistant who can help with various tasks.
-      Adapt your approach based on the specific request and
-      use available tools as needed.
-    model: gpt-4o
-    tools:
       - api_request
       - knowledge_query
 ```
 
-## Agent Instructions Best Practices
-
-### 1. **Clear Role Definition**
-Define the agent's primary role and responsibilities:
+### Knowledge Base Access
+Provide agents with relevant knowledge bases:
 
 ```yaml
-instructions: >
-  You are a customer support specialist who helps users resolve issues.
-  Your primary responsibilities are:
-  - Understanding user problems
-  - Providing accurate solutions
-  - Escalating complex issues when needed
-  - Maintaining a helpful, professional tone
+agents:
+  - name: TechnicalSupport
+    instructions: >
+      You are a technical support agent who helps users with
+      technical issues and provides accurate solutions.
+    model: gpt-4o
+    temperature: 0.1  # Low temperature for consistent technical responses
+    tools:
+      - knowledge_query
+    knowledge: ["technical_docs", "troubleshooting_guides"]
 ```
 
-### 2. **Behavioral Guidelines**
-Specify how the agent should behave:
+## Performance Optimization
+
+### Model Selection Strategy
+Choose GPT models based on specific requirements:
 
 ```yaml
-instructions: >
-  When responding to users:
-  - Always be polite and professional
-  - Ask clarifying questions if needed
-  - Provide step-by-step solutions
-  - Confirm understanding before proceeding
-  - Escalate if you cannot resolve the issue
-```
-
-### 3. **Quality Standards**
-Set expectations for output quality:
-
-```yaml
-instructions: >
-  When creating content:
-  - Ensure accuracy and fact-check information
-  - Use clear, engaging language
-  - Structure content logically
-  - Include relevant examples
-  - Proofread for grammar and clarity
-```
-
-### 4. **Context Awareness**
-Help the agent understand its environment:
-
-```yaml
-instructions: >
-  You are part of a content creation team. You work with:
-  - Researchers who provide information
-  - Editors who review your work
-  - Designers who create visuals
-  
-  Always consider how your work fits into the larger content strategy.
-```
-
-## Agent Communication
-
-### Internal Communication
-Agents communicate through:
-- **Task delegation** via delegation configuration (see [Delegation](coordination/delegation))
-- **Shared context** through conversation history
-- **Knowledge bases** for information sharing
-
-### External Communication
-Agents interact with users through:
-- **Direct responses** to user messages
-- **Structured outputs** based on instructions
-- **Tool results** and processed information
-
-:::tip Communication Style
-Define the agent's communication style in the instructions to ensure consistent, appropriate responses.
-:::
-
-## Agent Performance
-
-### Model Selection
-Choose models based on the agent's needs:
-
-```yaml
-# For creative tasks
-model: gpt-4o
-
-# For analytical tasks  
-model: claude-3-5-sonnet-20241022
-
-# For cost-effective general tasks
-model: gpt-3.5-turbo
-```
-
-### Temperature Settings
-Control creativity and randomness:
-
-```yaml
+# For creative tasks requiring high quality
 agents:
   - name: CreativeWriter
     model: gpt-4o
-    temperature: 0.8  # More creative
-    
-  - name: TechnicalWriter
+    temperature: 0.8
+    reasoning_effort: "medium"
+
+# For analytical tasks requiring deep reasoning
+agents:
+  - name: DataAnalyst
     model: gpt-4o
-    temperature: 0.1  # More focused and consistent
+    temperature: 0.2
+    reasoning_effort: "high"
+
+# For cost-effective general tasks
+agents:
+  - name: GeneralAssistant
+    model: gpt-4o-mini
+    temperature: 0.5
 ```
 
-:::info Temperature Guidelines
-- **Low (0.1-0.3)**: Factual, consistent responses
-- **Medium (0.4-0.6)**: Balanced creativity and consistency
-- **High (0.7-1.0)**: Creative, varied responses
-:::
+### Temperature Optimization
+Fine-tune creativity based on task requirements:
 
-## Common Agent Patterns
-
-### 1. **Research → Analysis → Writing**
 ```yaml
+# High creativity for brainstorming
 agents:
-  - name: Researcher
-    instructions: "Gather and organize information"
-    
-  - name: Analyst
-    instructions: "Analyze information and identify insights"
-    
-  - name: Writer
-    instructions: "Create content based on research and analysis"
+  - name: Brainstormer
+    temperature: 0.9
+
+# Balanced for general assistance
+agents:
+  - name: Assistant
+    temperature: 0.5
+
+# Low creativity for factual tasks
+agents:
+  - name: FactChecker
+    temperature: 0.1
 ```
 
-### 2. **Coordination → Specialization**
+### Reasoning Effort Tuning
+Balance speed vs. thoroughness:
+
 ```yaml
+# Deep analysis for complex problems
 agents:
-  - name: Coordinator
-    instructions: "Break down tasks and delegate to specialists"
-    orchestrator: true
-      
-  - name: TechnicalSpecialist
-    instructions: "Handle technical tasks and analysis"
-    
-  - name: CreativeSpecialist
-    instructions: "Handle creative and design tasks"
+  - name: ComplexAnalyst
+    reasoning_effort: "high"
+
+# Balanced for most tasks
+agents:
+  - name: GeneralAgent
+    reasoning_effort: "medium"
+
+# Fast responses for simple tasks
+agents:
+  - name: QuickResponder
+    reasoning_effort: "low"
 ```
 
-### 3. **Quality Assurance**
+## Advanced Configuration Patterns
+
+### Multi-Model Teams
+Use different GPT models for different agent roles:
+
 ```yaml
 agents:
-  - name: Creator
-    instructions: "Create initial content or solutions"
+  - name: CreativeDirector
+    model: gpt-5
+    temperature: 0.8
+    reasoning_effort: "medium"
+    instructions: "Lead creative projects and provide artistic direction"
     
-  - name: Reviewer
-    instructions: "Review and improve created content"
+  - name: TechnicalLead
+    model: gpt-4o
+    temperature: 0.2
+    reasoning_effort: "high"
+    instructions: "Handle technical architecture and complex problem solving"
     
-  - name: Finalizer
-    instructions: "Finalize and polish the final output"
+  - name: ProjectCoordinator
+    model: gpt-4o-mini
+    temperature: 0.3
+    instructions: "Coordinate tasks and manage timelines"
+```
+
+### Environment-Specific Configuration
+Configure agents for different environments:
+
+```yaml
+agents:
+  - name: "${ENV}_Support_Agent"
+    model: "${SUPPORT_MODEL:gpt-4o}"
+    temperature: ${SUPPORT_TEMP:0.2}
+    reasoning_effort: "${SUPPORT_REASONING:medium}"
+    instructions: >
+      You are a customer support agent for the ${ENV:production} environment.
+      Support level: ${SUPPORT_LEVEL:L1}
+      Escalation contact: ${ESCALATION_EMAIL:support@company.com}
+```
+
+### Cost Optimization
+Balance performance with cost using different GPT models:
+
+```yaml
+agents:
+  - name: PremiumAnalyst
+    model: gpt-4o
+    temperature: 0.2
+    reasoning_effort: "high"
+    instructions: "Handle complex analysis requiring premium capabilities"
+    
+  - name: StandardAssistant
+    model: gpt-4o-mini
+    temperature: 0.5
+    instructions: "Handle standard assistance tasks efficiently"
+    
+  - name: BudgetReviewer
+    model: gpt-4o-mini
+    temperature: 0.1
+    instructions: "Review content for quality and accuracy"
 ```
 
 ## Agent Limitations
 
-### Context Window
+### Context Window Constraints
 Agents are limited by their model's context window:
 - **Input context**: Previous conversation and instructions
 - **Output context**: Generated responses and tool usage
@@ -357,6 +331,7 @@ Agents can only access knowledge bases that are:
 Be aware of model limitations, tool availability, and knowledge base access when designing your agents.
 :::
 
+
 ## Environment Variables
 
 Agent configurations support environment variable substitution throughout all agent properties using `${VAR_NAME}` or `${VAR_NAME:default_value}` syntax.
@@ -377,6 +352,7 @@ agents:
       Use ${ANALYSIS_STYLE:statistical methods} and always ${QUALITY_STANDARD:double-check your work}.
     model: "${AGENT_MODEL:gpt-4o}"
     temperature: ${AGENT_TEMPERATURE:0.3}
+    reasoning_effort: "${AGENT_REASONING:medium}"
     tools: ["${PRIMARY_TOOL:mysql_query}", "${SECONDARY_TOOL:api_request}"]
 ```
 
@@ -397,6 +373,7 @@ agents:
       ${ENV_SPECIFIC_INSTRUCTIONS:Follow standard production protocols.}
     model: "${ENV_MODEL:gpt-4o}"
     temperature: ${ENV_TEMPERATURE:0.2}
+    reasoning_effort: "${ENV_REASONING:medium}"
 ```
 
 ### Multi-Environment Agent Setup
@@ -413,6 +390,8 @@ agents:
       - Alert threshold: ${ALERT_THRESHOLD:95%}
       - On-call contact: ${ONCALL_CONTACT:ops@company.com}
     model: "${MANAGER_MODEL:gpt-4o}"
+    temperature: ${MANAGER_TEMP:0.2}
+    reasoning_effort: "${MANAGER_REASONING:high}"
     orchestrator: ${IS_ORCHESTRATOR:true}
     tools: ["${MONITORING_TOOL:api_request}"]
 ```
@@ -428,6 +407,7 @@ export ROLE="senior data analyst"
 export COMPANY="Acme Corporation"
 export AGENT_MODEL="gpt-4o"
 export AGENT_TEMPERATURE="0.2"
+export AGENT_REASONING="high"
 
 # Environment-specific settings
 export ENV="production"
@@ -443,56 +423,27 @@ export ENVIRONMENT="production"
 export REGION="us-west-2"
 ```
 
-### Agent Instructions with Dynamic Content
-
-Environment variables are particularly useful for agent instructions:
-
-```yaml
-agents:
-  - name: CustomSupport
-    instructions: >
-      You are a customer support representative for ${COMPANY_NAME}.
-      
-      Company Information:
-      - Website: ${COMPANY_WEBSITE:https://company.com}
-      - Support email: ${SUPPORT_EMAIL:support@company.com}
-      - Phone: ${SUPPORT_PHONE:1-800-SUPPORT}
-      - Hours: ${SUPPORT_HOURS:9 AM - 6 PM EST, Monday-Friday}
-      
-      Product Information:
-      - Main product: ${PRODUCT_NAME:Our Product}
-      - Version: ${PRODUCT_VERSION:2.0}
-      - Documentation: ${DOCS_URL:https://docs.company.com}
-      
-      Policies:
-      - Refund period: ${REFUND_PERIOD:30 days}
-      - Escalation process: ${ESCALATION_PROCESS:Contact supervisor after 3 attempts}
-      
-      Always maintain a ${COMMUNICATION_TONE:professional and empathetic} tone.
-      ${ADDITIONAL_GUIDELINES:Follow company guidelines at all times.}
-```
-
 :::tip Agent Customization
 Use environment variables to create reusable agent configurations that can be customized for different environments, companies, or use cases without modifying the YAML files.
 :::
 
 ## Related Topics
 
-- [Teams](teams) - Learn how to configure and structure teams
+- [Teams](teams) - Learn about team orchestration, delegation patterns, and workflow management
 - [Orchestration](coordination/orchestration) - Understand agent coordination and workflow management
 - [Handoffs](coordination/handoffs) - Learn about control transfer mechanisms
 - [Delegation](coordination/delegation) - Understand task assignment and response handling with delegation configuration
 - [Tools](tools/intro) - Explore available tools for agents
-- [Knowledge](knowledge) - Understand knowledge base integration
+- [Knowledge Bases](knowledge-bases/intro) - Understand knowledge base integration
 - [Quickstart](quickstart) - Get started with your first team
 
 ## Next Steps
 
-Now that you understand agents, learn how to:
-- [Configure teams](teams) with multiple agents
+Now that you understand advanced agent configuration, learn how to:
+- [Configure teams](teams) with orchestration and delegation patterns
 - [Set up orchestration](coordination/orchestration) for agent coordination
 - [Use handoffs](coordination/handoffs) for control transfer
 - [Implement delegation](coordination/delegation) for task assignment
 - [Add tools](tools/intro) to enhance agent capabilities
-- [Set up knowledge bases](knowledge) for information access
+- [Set up knowledge bases](knowledge-bases/intro) for information access
 - [Create your first team](quickstart) with the quickstart guide

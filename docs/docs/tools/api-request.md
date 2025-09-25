@@ -213,8 +213,10 @@ The API request tool accepts the following configuration parameters:
 | `base_headers` | dict | `{}` | Default headers for all requests |
 | `timeout` | int | 30 | Request timeout in seconds |
 | `verify_ssl` | bool | true | Whether to verify SSL certificates |
-| `tool_name` | string | "api_request" | Custom name for the tool |
-| `tool_description` | string | "Make HTTP requests to API endpoints" | Custom description |
+
+:::info Tool Identity
+Use the YAML `name` and `description` fields to customize how the tool appears in the UI and agent prompts. The `name` becomes the tool's display name, while `description` explains its purpose to agents.
+:::
 
 ## Per-Call Parameters
 

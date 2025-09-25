@@ -46,22 +46,24 @@ tools:
 
 ```yaml
 tools:
-  - name: secure_file_ops
+  - name: Secure File Operations
+    id: secure_file_ops
+    description: "Secure file operations with restricted extensions"
     module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
       base_directory: "./secure_workspace"
       allowed_extensions: [".txt", ".json", ".md", ".py", ".yaml"]
       max_file_size: 5242880  # 5MB
-      tool_name: "secure_file_operations"
-      tool_description: "Secure file operations with restricted extensions"
 ```
 
 ### Multiple File Operation Tools
 
 ```yaml
 tools:
-  - name: docs_file_ops
+  - name: Document Manager
+    id: docs_file_ops
+    description: "Manage documentation files with safety restrictions"
     module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
@@ -69,7 +71,9 @@ tools:
       allowed_extensions: [".md", ".txt", ".json"]
       max_file_size: 2097152  # 2MB
 
-  - name: code_file_ops
+  - name: Code Manager
+    id: code_file_ops
+    description: "Manage code files with development restrictions"
     module: gnosari.tools.builtin.file_operations
     class: FileOperationsTool
     args:
@@ -219,8 +223,10 @@ The file operations tool accepts the following configuration parameters:
 | `base_directory` | string | "./workspace" | Base directory for file operations |
 | `allowed_extensions` | list | None | List of allowed file extensions (e.g., [".txt", ".json"]) |
 | `max_file_size` | int | 10485760 | Maximum file size in bytes (10MB default) |
-| `tool_name` | string | "file_operations" | Custom name for the tool |
-| `tool_description` | string | "Read, write, and manage files..." | Custom description |
+
+:::info Tool Identity
+Use the YAML `name` and `description` fields to customize how the tool appears in the UI and agent prompts. The `name` becomes the tool's display name, while `description` explains its purpose to agents.
+:::
 
 ## Per-Call Parameters
 

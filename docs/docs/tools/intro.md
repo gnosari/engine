@@ -35,15 +35,19 @@ Tools are configured in the `tools` section of your team YAML file. Here's the b
 
 ```yaml
 tools:
-  - name: tool_name
+  - name: Display Name for Tool
+    id: tool_id
+    description: "Description of what this tool does"
     module: gnosari.tools.tool_module
     class: ToolClassName
     args:
       # Tool-specific configuration parameters
 ```
 
-:::tip Tool Naming
-Each tool must have a unique name within your team configuration. This name is used by agents to reference the tool.
+:::info Tool Identity
+- **name**: Display name shown in UI and agent prompts
+- **id**: Unique identifier for agent references (optional)
+- **description**: Explains the tool's purpose to agents
 :::
 
 ### Basic Tool Configuration
@@ -52,7 +56,9 @@ Each tool must have a unique name within your team configuration. This name is u
 name: My Team
 
 tools:
-  - name: api_request
+  - name: External API Client
+    id: api_request
+    description: "Make HTTP requests to external services"
     module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
@@ -82,7 +88,9 @@ Some tools accept configuration parameters to customize their behavior:
 name: API Team
 
 tools:
-  - name: api_request
+  - name: External API Client
+    id: api_request
+    description: "Secure API client with authentication headers"
     module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
@@ -93,7 +101,9 @@ tools:
       timeout: 30
       verify_ssl: true
 
-  - name: mysql_query
+  - name: Database Query Engine
+    id: mysql_query
+    description: "Execute SQL queries against MySQL database"
     module: gnosari.tools.builtin.mysql_query
     class: MySQLQueryTool
     args:
@@ -155,13 +165,17 @@ Group related tools together and use descriptive names:
 
 ```yaml
 tools:
-  - name: external_api
+  - name: External Service API
+    id: external_api
+    description: "Connect to external third-party services"
     module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:
       base_url: https://external-service.com
       
-  - name: internal_api
+  - name: Internal Service API
+    id: internal_api
+    description: "Connect to internal company services"
     module: gnosari.tools.builtin.api_request
     class: APIRequestTool
     args:

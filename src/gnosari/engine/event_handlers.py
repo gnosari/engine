@@ -7,7 +7,7 @@ from typing import Dict, Any, AsyncGenerator, Optional
 from openai.types.responses import (
     ResponseTextDeltaEvent, ResponseTextDoneEvent, ResponseCompletedEvent,
     ResponseOutputItemAddedEvent, ResponseOutputItemDoneEvent, ResponseOutputMessage,
-    ResponseFunctionCallArgumentsDoneEvent, ResponseFunctionWebSearch
+    ResponseFunctionCallArgumentsDoneEvent, ResponseFunctionWebSearch, ResponseReasoningItem
 )
 from agents import ItemHelpers
 
@@ -47,21 +47,34 @@ class StreamEventHandler:
         logging.debug("Received raw response event: %s", str(event))
         if hasattr(event, 'data') and event.data is not None:
             if isinstance(event.data, ResponseOutputItemDoneEvent):
-                item = event.data
+                item = event.data.item
+                
+                # Handle reasoning items specifically
+                if isinstance(item, ResponseReasoningItem):
+                    yield {
+                        "id": item.id,
+                        "type": "reasoning",
+                        "content": getattr(item, 'content', None) or str(item.summary) if item.summary else "",
+                        "agent_name": self.current_agent,
+                        "status": getattr(item, 'status', None),
+                        "item_data": str(item)
+                    }
+                    return
+                
+                # Handle web search items
                 if isinstance(item, ResponseFunctionWebSearch):
                     yield {
                         "id": item.id,
                         "type": "tool_call",
                         "status": "completed",
-                        "call_id": getattr(event.item, 'id', f"tool_call_{self.current_agent}"),
+                        "call_id": getattr(item, 'id', f"tool_call_{self.current_agent}"),
                         "tool_name": 'web_search',
-                        "tool_item": str(event.item.raw_item),
+                        "tool_item": str(item),
                         "tool_input": {"query": item.action.query},
                         "agent_name": self.current_agent,
-                        "item_data": str(event.item),
+                        "item_data": str(item),
                         "arguments": {"query": item.action.query},
                     }
-
                     return
 
             if isinstance(event.data, ResponseTextDeltaEvent):
@@ -87,7 +100,20 @@ class StreamEventHandler:
     async def _handle_run_item_event(self, event) -> AsyncGenerator[Dict[str, Any], None]:
         """Handle run item events (tool calls, outputs, etc.)."""
         if hasattr(event, 'item') and event.item:
-            if event.item.type == "tool_call_item":
+            # Handle reasoning items
+            if event.item.type == "reasoning_item" or isinstance(getattr(event.item, 'raw_item', None), ResponseReasoningItem):
+                reasoning_item = getattr(event.item, 'raw_item', event.item)
+                yield {
+                    "id": getattr(reasoning_item, 'id', f"reasoning_{self.current_agent}"),
+                    "type": "reasoning",
+                    "content": getattr(reasoning_item, 'content', None) or str(getattr(reasoning_item, 'summary', [])),
+                    "agent_name": self.current_agent,
+                    "status": getattr(reasoning_item, 'status', None),
+                    "item_data": str(reasoning_item)
+                }
+                return
+                
+            elif event.item.type == "tool_call_item":
                 raw_item = event.item.raw_item
                 if isinstance(raw_item, ResponseFunctionWebSearch):
                     yield {
@@ -141,10 +167,20 @@ class StreamEventHandler:
     
     async def _handle_message_output_event(self, event) -> AsyncGenerator[Dict[str, Any], None]:
         """Handle message output events."""
+        # For reasoning models, preserve the full item structure to avoid reasoning item errors
+        # For other models, use the text extraction helper
+        try:
+            content = ItemHelpers.text_message_output(event.item)
+        except Exception as e:
+            # If ItemHelpers fails (possibly due to reasoning item dependencies), 
+            # fall back to preserving the full event item
+            self.logger.warning(f"ItemHelpers.text_message_output failed: {e}, preserving full item")
+            content = str(event.item)
+        
         yield {
             "type": "message_output",
             "agent_name": self.current_agent,
-            "content": ItemHelpers.text_message_output(event.item),
+            "content": content,
             "item": str(event.item)
         }
     

@@ -1,27 +1,56 @@
 """
-Gnosari Tools - OpenAI Agents SDK compatible tools.
+Gnosari Tools - Modular tool system for AI agents.
 
-All tools follow the FunctionTool class pattern for consistent dynamic loading.
-Use direct instantiation or tool_manager for creating tool instances.
+This package provides a comprehensive tool system with:
+- Base classes for creating new tools
+- Built-in tools for common operations
+- MCP (Model Context Protocol) integration
+- Tool registry and discovery system
 """
 
-# Tool classes for dynamic loading
-from .delegate_agent import DelegateAgentTool, set_team_dependencies
-from .knowledge_query import KnowledgeQueryTool
-from .api_request import APIRequestTool, get_default_api_request_tool
-from .file_operations import FileOperationsTool, get_default_file_operations_tool
+from .base import BaseTool, SimpleStringTool, ToolRegistry, tool_registry
+from .registry import ToolManager, ToolLoader, tool_manager
+from .interfaces import AsyncTool, SyncTool
+
+# Import builtin tools for backward compatibility
+from .builtin import (
+    DelegateAgentTool,
+    APIRequestTool, 
+    FileOperationsTool,
+    KnowledgeQueryTool,
+    BashOperationsTool,
+    InteractiveBashOperationsTool,
+    MySQLQueryTool,
+    WebsiteContentTool
+)
+
+# Legacy compatibility imports - removed set_team_dependencies (no longer needed with TeamContext)
 
 __all__ = [
-    # Tool classes
+    # Base classes
+    "BaseTool",
+    "SimpleStringTool", 
+    "ToolRegistry",
+    "ToolManager",
+    "ToolLoader",
+    
+    # Interfaces
+    "AsyncTool",
+    "SyncTool",
+    
+    # Global instances
+    "tool_registry",
+    "tool_manager",
+    
+    # Built-in tools
     "DelegateAgentTool",
-    "KnowledgeQueryTool", 
     "APIRequestTool",
-    "FileOperationsTool",
+    "FileOperationsTool", 
+    "KnowledgeQueryTool",
+    "BashOperationsTool",
+    "InteractiveBashOperationsTool",
+    "MySQLQueryTool",
+    "WebsiteContentTool",
     
-    # Factory functions (only where needed)
-    "get_default_api_request_tool",
-    "get_default_file_operations_tool",
-    
-    # Legacy compatibility (minimal)
-    "set_team_dependencies",
+    # Legacy compatibility - removed set_team_dependencies
 ]
